@@ -14,7 +14,10 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="src/commons-codec-1.9.jar"/>
-	<classpathentry kind="lib" path="src/jsonrpc4j-1.0.jar"/>
 	<classpathentry kind="lib" path="src/mysql-connector-java-5.1.13.jar"/>
+	<classpathentry kind="lib" path="src/jsonrpc2-base-1.35-javadoc.jar"/>
+	<classpathentry kind="lib" path="src/jsonrpc2-server-1.10.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="src/jsonrpc2-base-1.35.jar"/>
+	<classpathentry kind="lib" path="src/jsonrpc2-server-1.10.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

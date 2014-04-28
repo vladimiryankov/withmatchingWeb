@@ -16,7 +16,7 @@ import application.util.PassEncript;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-public class MySQLDAO implements PassEncript{
+public class MySQLDAO{
   private Connection connect = null;
   private Statement statement = null;
   private PreparedStatement preparedStatement = null;
@@ -26,10 +26,10 @@ public class MySQLDAO implements PassEncript{
   protected static final String insertSQLUser = "INSERT INTO User (Name, Email, Password) VALUES(?, ?, ?)";
   protected static final String updateSQLUser = "UPDATE User SET Name = ?, Email = ?, Password = ? WHERE ID = ?";
   protected static final String deleteSQLUser = "DELETE FROM User WHERE ID = ?";
+  protected static final String selectSQLUser = "SELECT * FROM User WHERE Email = ?";
   
   //methods not yet implemented
   protected static final String selectSQLAllUsers = "SELECT * FROM User";
-  protected static final String selectSQLUser = "SELECT * FROM User WHERE ID = ?";
   protected static final String selectSQLUserQuestions = "Select q.* FROM User u INNER JOIN Question q ON u.ID = q.OwnerId WHERE u.ID = ?";
   protected static final String selectSQLUserTests = "Select t.* FROM User u INNER JOIN Test t ON u.ID = t.OwnerId WHERE u.ID = ?";
   
@@ -88,13 +88,10 @@ public class MySQLDAO implements PassEncript{
 		  preparedStatement = connect.prepareStatement(insertSQLUser, Statement.RETURN_GENERATED_KEYS);
 		  int i = 1;
 		  
-		  //hash password
-		  String hashedPass = PassHash(u.getPassword());
-		  
 		  //build prepared Statement
 		  preparedStatement.setString(i++, u.getName());
 		  preparedStatement.setString(i++, u.getEmail());
-		  preparedStatement.setString(i++, hashedPass);
+		  preparedStatement.setString(i++, u.getPassword());
 		  
 		  preparedStatement.executeUpdate();
 		  
@@ -188,12 +185,10 @@ public class MySQLDAO implements PassEncript{
 		  //prepare Statement
 		  preparedStatement = connect.prepareStatement(updateSQLUser);
 		  int i = 1;
-		  //hash password
-		  String hashedPass = PassHash(u.getPassword());
 		  //build prepared Statement
 		  preparedStatement.setString(i++, u.getName());
 		  preparedStatement.setString(i++, u.getEmail());
-		  preparedStatement.setString(i++, hashedPass);
+		  preparedStatement.setString(i++, u.getPassword());
 		  
 		  preparedStatement.executeUpdate();
 		  
@@ -475,6 +470,31 @@ public class MySQLDAO implements PassEncript{
    * @return <code>Question</code>
    * @throws Exception
    */
+  
+  public User loadUser (String mail) throws Exception {
+	  try {
+		  preparedStatement = connect.prepareStatement(selectSQLUser);
+		  
+		  preparedStatement.setString(1, mail);
+		  
+		  resultSet = preparedStatement.executeQuery();
+		  
+		  User u = new User();
+		  
+		  while (resultSet.next()) {
+			build(u, resultSet);
+		  
+		  }
+		  return u;
+	  } catch (SQLException e) {
+		throw new Exception("SQL Error: "+e.getMessage());
+	  }
+	  finally
+	  {
+		  close();
+	  }
+  }
+  
   public Question loadQuestion(int qid) throws Exception {
 	  
 	  try {
@@ -575,6 +595,12 @@ public class MySQLDAO implements PassEncript{
   
   
   // BUILD METHODS
+  protected void build(User u, ResultSet rs) throws SQLException {
+	  u.setId(rs.getInt("ID"));
+	  u.setName(rs.getString("Name"));
+	  u.setName(rs.getString("Email"));
+	  u.setName(rs.getString("Password"));
+  }  
   
   protected void build(Question q, ResultSet rs) throws SQLException {
 	  q.setId(rs.getInt("ID"));
@@ -648,10 +674,4 @@ public class MySQLDAO implements PassEncript{
     }
   }
 
-@Override
-public String PassHash(String password) {
-	String hashedPass;
-	hashedPass = DigestUtils.sha256Hex(password);
-	return hashedPass;
-}
 }
