@@ -1,0 +1,23 @@
+
+<div class="row">
+			
+	<div class="col-md-3 col-md-offset-2">
+		
+	    <form class="form-signin" role="form" data-ng-submit="login(lEmail, lPassword)">
+		    <h2 class="form-signin-heading">Login</h2>
+		    <input type="email" class="form-control" placeholder="Email address" data-ng-model="lEmail" required autofocus>
+		    <input type="password" class="form-control" placeholder="Password" data-ng-model="lPassword" required>
+		    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+	    </form>
+	</div>
+	<div class="col-md-3 col-md-offset-1">
+		<form class="form-register" role="form" data-ng-submit="register(reg)">
+		    <h2 class="form-register-heading">Register</h2>
+		    <input type="email" class="form-control" placeholder="Email address" data-ng-model="reg.email" required autofocus>
+		    <input type="password" class="form-control" placeholder="Password" data-ng-model="reg.password" required>
+		    <input type="text" class="form-control" placeholder="Name" data-ng-model="reg.name" required>
+		    <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+	    </form>
+	   </div>
+	   <div class="col-md-3"></div>
+</div>

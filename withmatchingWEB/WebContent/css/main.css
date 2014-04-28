@@ -1,0 +1,15 @@
+body {
+	padding-top: 70px;
+}
+
+form input {
+	margin: 10px 0px;
+}
+
+form button {
+	margin: 15px 0px;
+}
+
+form h2 {
+	margin: 20px 0px;
+}

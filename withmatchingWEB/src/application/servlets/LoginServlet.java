@@ -9,15 +9,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 import application.dao.MySQLDAO;
 import application.dto.User;
 import application.util.PassEncript;
 
-import com.mysql.jdbc.MySQLConnection;
-import com.thetransactioncompany.jsonrpc2.*;
-import com.thetransactioncompany.jsonrpc2.util.*;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
+import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 
 /**
  * Servlet implementation class LoginServlet
@@ -32,28 +36,48 @@ public class LoginServlet extends HttpServlet implements PassEncript {
         super();
         // TODO Auto-generated constructor stub
     }
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	response.getWriter().print("Hallo!");
+    }
 
-	protected void doPost(JSONRPC2Request request, JSONRPC2Response response) throws ServletException, IOException, JSONRPC2Error {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		//retrieve request information
-		String method = request.getMethod();
+		//declare rpc objects
+		JSONRPC2Request req = null;
+		JSONRPC2Response resp = null;
 		
-		
-		if (method == "login")
-		{
-			//to do
-			JSONRPC2Response resp = loginUser(request, response);
-		}
-		else if (method == "registration")
-		{
+		try {
 			
-			JSONRPC2Response resp = registerUser(request, response);
-			//return response?
-		}
-		else
-		{
-			JSONRPC2Response resp = new JSONRPC2Response(JSONRPC2Error.METHOD_NOT_FOUND, request.getID());
-			//return response?
+			req = JSONRPC2Request.parse(request.getParameter("json"));
+			resp = new JSONRPC2Response(req.getID());
+			
+			//retrieve request information
+			String method = req.getMethod();
+			
+			if (method.equals("login"))
+			{
+				//to do
+				//JSONRPC2Response resp = loginUser(request, response);
+			}
+			else if (method.equals("registration"))
+			{
+				
+				//JSONRPC2Response resp = registerUser(request, response);
+				//return response?
+			}
+			else
+			{
+				JSONObject json = new JSONObject();
+				json.put("hi", "opa");
+				resp.setResult(json.toJSONString());
+			}
+		} catch(Throwable t) {
+			JSONRPC2Error error = new JSONRPC2Error(1, t.getMessage());
+			
+			resp.setError(error);
+		} finally {
+			response.getWriter().print(resp.toJSONObject().toJSONString());
 		}
 	}
 	
