@@ -1,7 +1,15 @@
 package application.util;
 
-public interface PassEncript {
+import org.apache.commons.codec.digest.DigestUtils;
+
+public class PassEncript {
 	
-	public String PassHash(String password);
+	public static String PassHash(String password) {
+		String hashedPass;
+		/*Date d = new Date();
+		d.g*/
+		hashedPass = DigestUtils.sha256Hex(password);
+		return hashedPass;
+	}
 
 }
