@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
+import javafx.collections.ObservableList;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
@@ -16,7 +18,10 @@ import net.minidev.json.JSONObject;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import application.controllers.QuestionController;
 import application.dao.MySQLDAO;
+import application.dto.Question;
+import application.dto.QuestionsList;
 import application.dto.User;
 import application.util.PassEncript;
 import application.util.TimeEncrpyt;
@@ -60,22 +65,11 @@ public class LoginServlet extends HttpServlet{
 			//retrieve request information
 			String method = req.getMethod();
 			
+			//find the requested method
 			if (method.equals("login"))
 			{
-				//check credentials
-				resp = loginUser(req, resp);
-				
-				//create session
-				if (resp.getResult().toString().equals("success"))
-				{
-					HttpSession session = request.getSession();
-					session.setAttribute("pass", TimeEncrpyt.TimeHash());
-					session.setMaxInactiveInterval(30*60);
-					Cookie pass = new Cookie("pass", TimeEncrpyt.TimeHash());
-					pass.setMaxAge(30*60);
-					response.addCookie(pass);
-					resp.setResult("Login successsful");
-				}
+				//login user
+				resp = loginUser(request, response, req);
 			}
 			else if (method.equals("registration"))
 			{
@@ -85,8 +79,47 @@ public class LoginServlet extends HttpServlet{
 			else if (isLoggedIn(request))
 			{
 				if (method.equals("logout")) {
+					//logout user
 					logoutUser(request);
 					resp.setResult("Logout successful");
+				}
+				else if (method.equals("loadAllQuestions"))
+				{
+					//return all current questions as QuestionsList
+					QuestionsList questions = QuestionController.loadAllQuestions();
+					if (questions != null)
+					{
+						JSONObject jsonQuestions = new JSONObject();
+						jsonQuestions.put("allQuestions", questions);
+						resp.setResult(jsonQuestions.toJSONString());
+					}
+					else
+					{
+						resp.setError(JSONRPC2Error.INTERNAL_ERROR);
+					}
+				}
+				else if(method.equals("addQuestion"))
+				{
+					//get question
+					Map<String,Object> params = req.getNamedParams();
+					NamedParamsRetriever np = new NamedParamsRetriever(params);
+					String body = np.getString("body");
+					String answer = np.getString("answer");
+					
+					//get user
+					User u = getCurrentUser(request);
+					int userID = (int) u.getId();
+					
+					//return ID of Question if added successfully
+					int qid = QuestionController.addQuestion(body, answer, userID);
+					if (qid < 0)
+					{
+						resp.setResult("Question added");
+					}
+					else
+					{
+						resp.setError(JSONRPC2Error.INTERNAL_ERROR);
+					}
 				}
 				JSONObject json = new JSONObject();
 				json.put("hi", "opa");
@@ -101,7 +134,7 @@ public class LoginServlet extends HttpServlet{
 			response.getWriter().print(resp.toJSONObject().toJSONString());
 		}
 	}
-	
+
 	public JSONRPC2Response registerUser(JSONRPC2Request request, JSONRPC2Response response) {
 		
 		JSONRPC2ParamsType paramsType = request.getParamsType();
@@ -129,33 +162,65 @@ public class LoginServlet extends HttpServlet{
 		
 	}
 	
-	public JSONRPC2Response loginUser(JSONRPC2Request request, JSONRPC2Response response){
-		//retrieve request information
-		Map<String,Object> params = request.getNamedParams();
+	public JSONRPC2Response loginUser(HttpServletRequest request, HttpServletResponse response, JSONRPC2Request jsonReq)
+	{
+		//get user info
+		Map<String,Object> params = jsonReq.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		
+		int reqID =  (int) jsonReq.getID();
 		try {
-			//load user by email
+			String password = PassEncript.PassHash(np.getString("password"));
+			String email = np.getString("email");
+		
+			//establis connection
+		
 			MySQLDAO dao = new MySQLDAO();
-			User u = dao.loadUser(np.getString("email"));
+			
+			//get user by email
+			User u = dao.loadUser(email);
 			
 			//check if password is correct
-			String enteredHashPass = PassEncript.PassHash(np.getString("password"));
-			if (u.getPassword().equals(enteredHashPass))
+			if (u.getPassword().equals(password))
 			{
-				return new JSONRPC2Response("success", request.getID());
+				//create sesssion and cookies
+				HttpSession session = request.getSession();
+				session.setAttribute("pass", TimeEncrpyt.TimeHash());
+				session.setAttribute("user", email);
+				session.setMaxInactiveInterval(30*60);
+				Cookie pass = new Cookie("pass", TimeEncrpyt.TimeHash());
+				pass.setMaxAge(30*60);
+				response.addCookie(pass);
+				
+				//return result
+				return new JSONRPC2Response("User Login successful", reqID);
 			}
 			else
 			{
-				JSONRPC2Error loginError = new JSONRPC2Error(2, "Email / Password missmatch");
-				response.setError(loginError);
-				return new JSONRPC2Response("Email / Password missmatch!", request.getID());
+				return new JSONRPC2Response("Email / Password missmatch!", reqID);
 			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, request.getID());
+			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, reqID);
 		}
+		
+	}
+	
+	public User getCurrentUser(HttpServletRequest request)
+	{
+		//get session user
+		HttpSession session = request.getSession();
+		String userMail = (String) session.getAttribute("user");
+		try {
+			MySQLDAO dao = new MySQLDAO();
+			User u = new User();
+			u = dao.loadUser(userMail);
+			return u;
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public boolean isLoggedIn(HttpServletRequest request)
