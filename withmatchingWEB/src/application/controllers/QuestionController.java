@@ -34,5 +34,29 @@ public class QuestionController {
 		}
 		return -1;
 	}
+
+	public static boolean deleteQuestion(int questionID) {
+		try {
+			MySQLDAO dao = new MySQLDAO();
+			dao.deleteQuestion(questionID);
+			return true;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public static boolean updateQuestion(int questionId, String questionBody,
+			String questionAnswer) {
+		try {
+			MySQLDAO dao = new MySQLDAO();
+			dao.updateQuestion(questionBody, questionAnswer, questionId);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	
 }

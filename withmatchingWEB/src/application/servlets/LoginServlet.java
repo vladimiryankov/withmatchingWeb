@@ -1,10 +1,7 @@
 package application.servlets;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Map;
-
-import javafx.collections.ObservableList;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,18 +13,14 @@ import javax.servlet.http.HttpSession;
 
 import net.minidev.json.JSONObject;
 
-import org.apache.commons.codec.digest.DigestUtils;
-
 import application.controllers.QuestionController;
 import application.dao.MySQLDAO;
-import application.dto.Question;
 import application.dto.QuestionsList;
 import application.dto.User;
 import application.util.PassEncript;
 import application.util.TimeEncrpyt;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Message;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -85,7 +78,7 @@ public class LoginServlet extends HttpServlet{
 				}
 				else if (method.equals("loadAllQuestions"))
 				{
-					//return all current questions as QuestionsList
+					//return all questions as QuestionsList
 					QuestionsList questions = QuestionController.loadAllQuestions();
 					if (questions != null)
 					{
@@ -100,26 +93,18 @@ public class LoginServlet extends HttpServlet{
 				}
 				else if(method.equals("addQuestion"))
 				{
-					//get question
-					Map<String,Object> params = req.getNamedParams();
-					NamedParamsRetriever np = new NamedParamsRetriever(params);
-					String body = np.getString("body");
-					String answer = np.getString("answer");
-					
-					//get user
-					User u = getCurrentUser(request);
-					int userID = (int) u.getId();
-					
-					//return ID of Question if added successfully
-					int qid = QuestionController.addQuestion(body, answer, userID);
-					if (qid < 0)
-					{
-						resp.setResult("Question added");
-					}
-					else
-					{
-						resp.setError(JSONRPC2Error.INTERNAL_ERROR);
-					}
+					//add question
+					resp = addQuestion(req, request);
+				}
+				else if(method.equals("deleteQuestion"))
+				{
+					//delete question
+					resp = deleteQuestion(req);
+				}
+				else if(method.equals("udpateQuestion"))
+				{
+					//update question
+					resp = updateQuestion(req);
 				}
 				JSONObject json = new JSONObject();
 				json.put("hi", "opa");
@@ -268,5 +253,75 @@ public class LoginServlet extends HttpServlet{
 			}
 		//invalidate session
 		request.getSession().invalidate();
+	}
+	
+	public JSONRPC2Response addQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
+	{
+		//get question
+		Map<String,Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		String body = np.getString("body");
+		String answer = np.getString("answer");
+		
+		//get user
+		User u = getCurrentUser(request);
+		int userID = (int) u.getId();
+		
+		//return ID of Question if added successfully
+		int qid = QuestionController.addQuestion(body, answer, userID);
+		if (qid < 0)
+		{
+			return new JSONRPC2Response("Question added");
+		}
+		else
+		{
+			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, req.getID());
+		}
+	}
+	
+	public JSONRPC2Response deleteQuestion(JSONRPC2Request request) throws JSONRPC2Error
+	{
+		//get question id
+		Map<String,Object> params = request.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		int questionId = np.getInt("id");
+		
+		//remove question from database
+		boolean questionDeleted = false;
+		questionDeleted = QuestionController.deleteQuestion(questionId);
+		
+		//send result
+		if(questionDeleted)
+		{
+			return new JSONRPC2Response("Question deleted");
+		}
+		else
+		{
+			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, request.getID());
+		}
+	}
+	
+	public JSONRPC2Response updateQuestion(JSONRPC2Request request) throws JSONRPC2Error
+	{
+		//get question
+		Map<String,Object> params = request.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		int questionId = np.getInt("id");
+		String questionBody = np.getString("body");
+		String questionAnswer = np.getString("answer");
+		
+		//update question in database
+		boolean questionUpdated = false;
+		questionUpdated = QuestionController.updateQuestion(questionId, questionBody, questionAnswer);
+		
+		//return result
+		if(questionUpdated)
+		{
+			return new JSONRPC2Response("Question updated");
+		}
+		else
+		{
+			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, request.getID());
+		}
 	}
 }

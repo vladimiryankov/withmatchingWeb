@@ -204,22 +204,20 @@ public class MySQLDAO{
 	  }
   }
   
-  public Question updateQuestion (Question q) throws Exception {
+  public void updateQuestion (String body, String answer, int qid) throws Exception {
 	  try {
 		  
 		  //prepare statement
 		  preparedStatement = connect.prepareStatement(updateSQLQuestion);
 		  int i = 1;
 		  //build prepared statement
-		  preparedStatement.setString(i++, q.getBody());
-		  preparedStatement.setString(i++, q.getAnswer());
-		  preparedStatement.setInt(i++, q.getId());
+		  preparedStatement.setString(i++, body);
+		  preparedStatement.setString(i++, body);
+		  preparedStatement.setInt(i++, qid);
 		  
 		  preparedStatement.executeUpdate();
 		  
 		  
-	      
-	      return q;
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {
@@ -278,7 +276,7 @@ public class MySQLDAO{
 	  }
   }
   
-  public Question deleteQuestion (Question q) throws Exception {
+  public void deleteQuestion (int qid) throws Exception {
 	  try {
 		  
 		  //prepare statement
@@ -286,13 +284,11 @@ public class MySQLDAO{
 		 
 		  //build prepared statement
 		  
-		  preparedStatement.setInt(1, q.getId());
+		  preparedStatement.setInt(1, qid);
 		  
 		  preparedStatement.executeUpdate();
 		  
 		  
-	      
-	      return q;
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {
