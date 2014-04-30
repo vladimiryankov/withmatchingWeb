@@ -2,7 +2,7 @@
 
 /* Services */
 
-var spreasyServices = angular.module('withmatchingServices',[]);
+var spreasyServices = angular.module('withmatchingServices',['angular-json-rpc']);
 
 spreasyServices.factory('AjaxCallService', ['$http', '$rootScope', function ($http, $rootScope) {
 	return {
@@ -12,15 +12,12 @@ spreasyServices.factory('AjaxCallService', ['$http', '$rootScope', function ($ht
 					method: method,
 					data: data
 			};
-			
-			$http({
-				method: 'POST', 
-				url: '/local',
-				headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-				data: "json="+encodeURIComponent(JSON.stringify(payload))}).
+			//{method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
+			$http.
+				jsonrpc('LoginServlet', method, data).
 			success(function onAjaxSuccess(resp, status, headers, config) {
 				$rootScope.ajaxLoading = false;
-				if (resp.status != "200:OK") {
+				if (resp.error != "undefined") {
 					onError(resp.error.message);
 					console.log(resp.error);
 				} else {

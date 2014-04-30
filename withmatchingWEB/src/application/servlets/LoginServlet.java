@@ -1,5 +1,6 @@
 package application.servlets;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Map;
 
@@ -12,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import net.minidev.json.JSONObject;
-
 import application.controllers.QuestionController;
 import application.dao.MySQLDAO;
 import application.dto.QuestionsList;
@@ -51,8 +51,18 @@ public class LoginServlet extends HttpServlet{
 		JSONRPC2Response resp = null;
 		
 		try {
+			/*
+			 * Had to change this, since after switching to the JS json-rpc lib
+			 * the request has no params ("json=" in our case) and the whole payload is the request data itself
+			 */
+			StringBuffer jb = new StringBuffer();
+			String line = null;
+			//Getting the request reader in order to load the whole request date into a single string
+			BufferedReader reader = request.getReader();
+		    while ((line = reader.readLine()) != null) jb.append(line);
+			
 			//populate rpc objects
-			req = JSONRPC2Request.parse(request.getParameter("json"));
+			req = JSONRPC2Request.parse(jb.toString());
 			resp = new JSONRPC2Response(req.getID());
 			
 			//retrieve request information

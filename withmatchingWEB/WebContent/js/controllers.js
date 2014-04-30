@@ -76,39 +76,3 @@ spreasyControllers.controller('HomeCtrl', ['$scope', '$state', 'SessionUser', fu
 	$scope.user = {};
 	$scope.user.name = SessionUser.getName();
 }]);
-
-spreasyControllers.controller('HouseholdCtrl', ['$scope', '$state', 'SessionUser', 'AjaxCallService', function ($scope, $state, SessionUser, AjaxCallService) {
-	if (!SessionUser.isLoggedIn()) $state.go('login');
-	
-
-	AjaxCallService.call('loadHouseholds',{uid: SessionUser.getId()}, 
-			function onSuccess(data) {
-				$scope.households = data.households;
-			},
-			function onError(data) {
-				$scope.$emit('alertMessage', {type: 'danger', message: data});
-			}
-	);
-	
-	$scope.saveHousehold = function () {
-		AjaxCallService.call('saveHousehold',{uid: SessionUser.getId(), household: {name: $scope.hhName, description: $scope.hhDescription}}, 
-				function onSuccess(data) {
-					$scope.households = data.households;
-				},
-				function onError(data) {
-					$scope.$emit('alertMessage', {type: 'danger', message: data});
-				}
-		);
-	}
-	
-	$scope.deleteHousehold = function (id, index) {
-		AjaxCallService.call('deleteHousehold',{uid: SessionUser.getId(), household: {id: id}}, 
-				function onSuccess(data) {
-					$scope.households.splice(index,1);
-				},
-				function onError(data) {
-					$scope.$emit('alertMessage', {type: 'danger', message: data});
-				}
-		);
-	}
-}]);

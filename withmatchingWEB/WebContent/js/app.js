@@ -24,10 +24,5 @@ withmatching.config(['$stateProvider','$urlRouterProvider',
     	url: '/home',
         templateUrl: 'partials/home.html',
         controller: 'HomeCtrl'
-      }).
-      state('households', {
-      	url: '/households',
-          templateUrl: 'partials/households.html',
-          controller: 'HouseholdCtrl'
-        });
+      });
   }]);
