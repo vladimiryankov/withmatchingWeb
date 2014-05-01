@@ -9,13 +9,13 @@ public class Question {
 	private SimpleStringProperty id;
 	private SimpleStringProperty body;
 	private SimpleStringProperty answer;
-	private long ownerId;
+	private int ownerId;
 	
-	public long getOwnerId() {
+	public int getOwnerId() {
 		return ownerId;
 	}
 
-	public void setOwnerId(long ownerId) {
+	public void setOwnerId(int ownerId) {
 		this.ownerId = ownerId;
 	}
 

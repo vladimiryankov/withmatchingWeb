@@ -5,19 +5,19 @@ public class Test {
 	private int id;
 	private String name;
 	private QuestionsList questions;
-	private long ownerId;
+	private int ownerId;
 	
 	public Test() {
 		this.id = 0;
 	}
 	
 	
-	public long getOwnerId() {
+	public int getOwnerId() {
 		return ownerId;
 	}
 
 
-	public void setOwnerId(long ownerId) {
+	public void setOwnerId(int ownerId) {
 		this.ownerId = ownerId;
 	}
 

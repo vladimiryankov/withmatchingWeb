@@ -123,7 +123,7 @@ public class MySQLDAO{
 		  //build prepared statement
 		  preparedStatement.setString(i++, q.getBody());
 		  preparedStatement.setString(i++, q.getAnswer());
-		  preparedStatement.setLong(i++, q.getOwnerId());
+		  preparedStatement.setInt(i++, q.getOwnerId());
 		  
 		  preparedStatement.executeUpdate();
 		  
@@ -152,7 +152,7 @@ public class MySQLDAO{
 		  int i = 1;
 		  //build prepared statement
 		  preparedStatement.setString(i++, t.getName());
-		  preparedStatement.setLong(i++, t.getOwnerId());
+		  preparedStatement.setInt(i++, t.getOwnerId());
 		  
 		  
 		  preparedStatement.executeUpdate();
@@ -460,10 +460,10 @@ public class MySQLDAO{
   }
   
   /**
-   * Load a single <code>Question</code>.
+   * Load a single <code>User</code>.
    * 
-   * @param qid
-   * @return <code>Question</code>
+   * @param email
+   * @return <code>User</code>
    * @throws Exception
    */
   
@@ -490,6 +490,14 @@ public class MySQLDAO{
 		  close();
 	  }
   }
+  
+  /**
+   * Load a single <code>Question</code>.
+   * 
+   * @param qid
+   * @return <code>Question</code>
+   * @throws Exception
+   */
   
   public Question loadQuestion(int qid) throws Exception {
 	  
@@ -594,8 +602,8 @@ public class MySQLDAO{
   protected void build(User u, ResultSet rs) throws SQLException {
 	  u.setId(rs.getInt("ID"));
 	  u.setName(rs.getString("Name"));
-	  u.setName(rs.getString("Email"));
-	  u.setName(rs.getString("Password"));
+	  u.setEmail(rs.getString("Email"));
+	  u.setPassword(rs.getString("Password"));
   }  
   
   protected void build(Question q, ResultSet rs) throws SQLException {

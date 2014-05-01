@@ -2,7 +2,7 @@ package application.dto;
 
 public class User {
 
-	private long id;
+	private int id;
 	private String name;
 	private String email;
 	private String password;
@@ -12,11 +12,11 @@ public class User {
 		this.id = 0;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
