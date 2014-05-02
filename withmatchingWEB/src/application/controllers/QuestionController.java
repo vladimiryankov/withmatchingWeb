@@ -26,9 +26,9 @@ public class QuestionController {
 			q.setOwnerId(userID);
 			
 			MySQLDAO dao = new MySQLDAO();
-			dao.insertQuestion(q);
+			Question insertedQ = dao.insertQuestion(q);
 			
-			return q.getId();
+			return insertedQ.getId();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -47,16 +47,16 @@ public class QuestionController {
 		return false;
 	}
 
-	public static boolean updateQuestion(int questionId, String questionBody,
+	public static int updateQuestion(int questionId, String questionBody,
 			String questionAnswer) {
 		try {
 			MySQLDAO dao = new MySQLDAO();
-			dao.updateQuestion(questionBody, questionAnswer, questionId);
-			return true;
+			int qid = dao.updateQuestion(questionBody, questionAnswer, questionId);
+			return qid;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
+		return -1;
 	}
 	
 }

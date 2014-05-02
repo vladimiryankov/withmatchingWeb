@@ -14,8 +14,10 @@ import javax.servlet.http.HttpSession;
 
 import net.minidev.json.JSONObject;
 import application.controllers.QuestionController;
+import application.controllers.TestController;
 import application.dao.MySQLDAO;
 import application.dto.QuestionsList;
+import application.dto.TestsList;
 import application.dto.User;
 import application.util.PassEncript;
 import application.util.TimeEncrpyt;
@@ -77,7 +79,7 @@ public class LoginServlet extends HttpServlet{
 			{
 				//login user
 				jsonResult = loginUser(request, response, req);
-				System.out.println(jsonResult.toString());
+				System.out.println("json result: " + jsonResult.toString());
 				resp.setResult(jsonResult.toJSONString());
 			}
 			else if (method.equals("register"))
@@ -85,15 +87,16 @@ public class LoginServlet extends HttpServlet{
 				//register user
 				//TODO duplicates!
 				jsonResult = registerUser(req, resp);
-				System.out.println(jsonResult.toString());
+				System.out.println("json result to string: " + jsonResult.toString());
 				resp.setResult(jsonResult.toJSONString());
 			}
 			else if (isLoggedIn(request))
 			{
 				if (method.equals("logout")) {
 					//logout user
-					logoutUser(request);
-					resp.setResult("Logout successful");
+					jsonResult = logoutUser(request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
 				}
 				else if (method.equals("loadAllQuestions"))
 				{
@@ -103,6 +106,7 @@ public class LoginServlet extends HttpServlet{
 					{
 						JSONObject jsonQuestions = new JSONObject();
 						jsonQuestions.put("allQuestions", questions);
+						System.out.println("jsonQuestions: " + jsonQuestions.toString());
 						resp.setResult(jsonQuestions.toJSONString());
 					}
 					else
@@ -113,17 +117,60 @@ public class LoginServlet extends HttpServlet{
 				else if(method.equals("addQuestion"))
 				{
 					//add question
-					resp = addQuestion(req, request);
+					jsonResult = addQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
 				}
 				else if(method.equals("deleteQuestion"))
 				{
 					//delete question
-					resp = deleteQuestion(req);
+					jsonResult = deleteQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
 				}
 				else if(method.equals("udpateQuestion"))
 				{
 					//update question
-					resp = updateQuestion(req);
+					jsonResult = updateQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
+				}
+				else if (method.equals("loadAllTests"))
+				{
+					//return all questions as QuestionsList
+					TestsList tests = TestController.loadAllTests();
+					if (tests != null)
+					{
+						JSONObject jsonTests = new JSONObject();
+						jsonTests.put("allTests", tests);
+						System.out.println("jsonTests: " + jsonTests.toString());
+						resp.setResult(jsonTests.toJSONString());
+					}
+					else
+					{
+						resp.setError(JSONRPC2Error.INTERNAL_ERROR);
+					}
+				}
+				else if(method.equals("addTest"))
+				{
+					//add question
+					jsonResult = addTest(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
+				}
+				else if(method.equals("deleteTest"))
+				{
+					//delete question
+					jsonResult = deleteTest(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
+				}
+				else if(method.equals("updateTest"))
+				{
+					//update question
+					jsonResult = updateTest(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult.toJSONString());
 				}
 				/*
 				JSONObject json = new JSONObject();
@@ -138,11 +185,121 @@ public class LoginServlet extends HttpServlet{
 		} finally {
 			//dispatch result
 			response.getWriter().print(resp.toJSONObject().toJSONString());
+			System.out.println("final result: " + resp.toJSONObject().toJSONString());
 		}
+	}
+
+	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
+		JSONObject jsonUpdateTest = new JSONObject();
+		
+		//get question
+		Map<String,Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		int testId = np.getInt("id");
+		String testName = np.getString("name");
+		int tOwnerId = np.getInt("ownerId");
+		
+		User u = getCurrentUser(request);
+		
+		//check for privilleges
+		if	(u.getId() == tOwnerId)
+		{
+			//update question in database
+			int tidUpdated = TestController.updateTest(testId, testName);
+			
+			//return result
+			if(tidUpdated > -1 && tidUpdated == testId)
+			{
+				jsonUpdateTest.put("message", "test updated");
+				jsonUpdateTest.put("id", tidUpdated);
+				jsonUpdateTest.put("name", testName);
+				return jsonUpdateTest;
+			}
+			else
+			{
+				jsonUpdateTest.put("error", "error occured updating test");
+				return jsonUpdateTest;
+			}
+		}
+		else
+		{
+			jsonUpdateTest.put("error", "the user has no privilleges");
+			return jsonUpdateTest;
+		}
+		
+	}
+
+	private JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
+		//create json object for the result
+		JSONObject jsonDeleteTest = new JSONObject();
+		
+		//get question id
+		Map<String,Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		int testId = np.getInt("id");
+		int tOwnerId = np.getInt("ownerId");
+		
+		User u = getCurrentUser(request);
+		
+		//check for privilleges
+		if	(u.getId() == tOwnerId)
+		{
+
+			//remove question from database
+			int testDeletedId;
+			testDeletedId = TestController.deleteTest(testId);
+			
+			//send result
+			if(testDeletedId == testId)
+			{
+				jsonDeleteTest.put("message", "test deleted");
+				jsonDeleteTest.put("testId", testId);
+				return jsonDeleteTest;
+			}
+			else
+			{
+				jsonDeleteTest.put("error", "error occured deleting test");
+				return jsonDeleteTest;
+			}
+		}
+		else
+		{
+			jsonDeleteTest.put("error", "user has no privilleges");
+			return jsonDeleteTest;
+		}
+	}
+
+	private JSONObject addTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
+				//json object for the result
+				JSONObject jsonAddTest = new JSONObject();
+				
+				//get question
+				Map<String,Object> params = req.getNamedParams();
+				NamedParamsRetriever np = new NamedParamsRetriever(params);
+				String name = np.getString("name");
+				
+				//get user
+				User u = getCurrentUser(request);
+				int userID = (int) u.getId();
+				
+				//return ID of Question if added successfully
+				int tid = TestController.addTest(name, userID);
+				if (tid > -1)
+				{
+					jsonAddTest.put("id", tid);
+					jsonAddTest.put("body", name);
+					return jsonAddTest;
+				}
+				else
+				{
+					jsonAddTest.put("error", "error occured adding the test");
+					return jsonAddTest;
+				}
 	}
 
 	public JSONObject registerUser(JSONRPC2Request request, JSONRPC2Response response) {
 		
+		@SuppressWarnings("unused")
 		JSONRPC2ParamsType paramsType = request.getParamsType();
 		Map<String,Object> params = request.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
@@ -209,9 +366,12 @@ public class LoginServlet extends HttpServlet{
 					//create sesssion and cookies
 					HttpSession session = request.getSession();
 					session.setAttribute("pass", TimeEncrpyt.TimeHash());
+					System.out.println("session pass: " + session.getAttribute("pass").toString());
 					session.setAttribute("user", email);
+					System.out.println("session user: " + session.getAttribute("user").toString());
 					session.setMaxInactiveInterval(30*60);
 					Cookie pass = new Cookie("pass", TimeEncrpyt.TimeHash());
+					System.out.println("cookie pass: " + pass.getValue().toString());
 					pass.setMaxAge(30*60);
 					response.addCookie(pass);
 					
@@ -278,7 +438,7 @@ public class LoginServlet extends HttpServlet{
 		}
 	}
 	
-	public void logoutUser(HttpServletRequest request)
+	public JSONObject logoutUser(HttpServletRequest request)
 	{
 		//get session time stamp
 		HttpSession session = request.getSession();
@@ -298,10 +458,18 @@ public class LoginServlet extends HttpServlet{
 			}
 		//invalidate session
 		request.getSession().invalidate();
+		
+		//send result
+		JSONObject jsonLogout = new JSONObject();
+		jsonLogout.put("sessionOver", session);
+		return jsonLogout;
 	}
 	
-	public JSONRPC2Response addQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
+	public JSONObject addQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
 	{
+		//json object for the result
+		JSONObject jsonAddQuestion = new JSONObject();
+		
 		//get question
 		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
@@ -314,59 +482,100 @@ public class LoginServlet extends HttpServlet{
 		
 		//return ID of Question if added successfully
 		int qid = QuestionController.addQuestion(body, answer, userID);
-		if (qid < 0)
+		if (qid > -1)
 		{
-			return new JSONRPC2Response("Question added");
+			jsonAddQuestion.put("id", qid);
+			jsonAddQuestion.put("body", body);
+			jsonAddQuestion.put("answer", answer);
+			return jsonAddQuestion;
 		}
 		else
 		{
-			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, req.getID());
+			jsonAddQuestion.put("error", "error occured adding the question");
+			return jsonAddQuestion;
 		}
 	}
 	
-	public JSONRPC2Response deleteQuestion(JSONRPC2Request request) throws JSONRPC2Error
+	public JSONObject deleteQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
 	{
+		//create json object for the result
+		JSONObject jsonDeleteQuestion = new JSONObject();
+		
 		//get question id
-		Map<String,Object> params = request.getNamedParams();
+		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
 		int questionId = np.getInt("id");
+		int qOwnwerId = np.getInt("ownerId");
 		
-		//remove question from database
-		boolean questionDeleted = false;
-		questionDeleted = QuestionController.deleteQuestion(questionId);
+		User u = getCurrentUser(request);
 		
-		//send result
-		if(questionDeleted)
+		//check for user privilleges
+		if	(u.getId() == qOwnwerId)
 		{
-			return new JSONRPC2Response("Question deleted");
+
+			//remove question from database
+			boolean questionDeleted = false;
+			questionDeleted = QuestionController.deleteQuestion(questionId);
+			
+			//send result
+			if(questionDeleted)
+			{
+				jsonDeleteQuestion.put("message", "question deleted");
+				jsonDeleteQuestion.put("questionId", questionId);
+				return jsonDeleteQuestion;
+			}
+			else
+			{
+				jsonDeleteQuestion.put("error", "error occured deleting question");
+				return jsonDeleteQuestion;
+			}
 		}
 		else
 		{
-			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, request.getID());
+			jsonDeleteQuestion.put("error", "user has no privilleges");
+			return jsonDeleteQuestion;
 		}
 	}
 	
-	public JSONRPC2Response updateQuestion(JSONRPC2Request request) throws JSONRPC2Error
+	public JSONObject updateQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
 	{
+		JSONObject jsonUpdateQuestion = new JSONObject();
+		
 		//get question
-		Map<String,Object> params = request.getNamedParams();
+		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
 		int questionId = np.getInt("id");
 		String questionBody = np.getString("body");
 		String questionAnswer = np.getString("answer");
+		int qOwnerId = np.getInt("ownerId");
 		
-		//update question in database
-		boolean questionUpdated = false;
-		questionUpdated = QuestionController.updateQuestion(questionId, questionBody, questionAnswer);
+		User u = getCurrentUser(request);
 		
-		//return result
-		if(questionUpdated)
+		//check if this is the owner of the question
+		if (u.getId() == qOwnerId)
 		{
-			return new JSONRPC2Response("Question updated");
+			//update question in database
+			int qidUpdated = QuestionController.updateQuestion(questionId, questionBody, questionAnswer);
+			
+			//return result
+			if(qidUpdated > -1 && qidUpdated == questionId)
+			{
+				jsonUpdateQuestion.put("message", "question updated");
+				jsonUpdateQuestion.put("id", qidUpdated);
+				jsonUpdateQuestion.put("body", questionBody);
+				jsonUpdateQuestion.put("answer", questionAnswer);
+				return jsonUpdateQuestion;
+			}
+			else
+			{
+				jsonUpdateQuestion.put("error", "error occured updating question");
+				return jsonUpdateQuestion;
+			}
 		}
 		else
 		{
-			return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, request.getID());
+			jsonUpdateQuestion.put("error", "the user has no privilleges");
+			return jsonUpdateQuestion;
 		}
 	}
 }
