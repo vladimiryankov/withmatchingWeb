@@ -2,9 +2,9 @@
 
 /* Services */
 
-var spreasyServices = angular.module('withmatchingServices',['angular-json-rpc']);
+var withmatchingServices = angular.module('withmatchingServices',['angular-json-rpc']);
 
-spreasyServices.factory('AjaxCallService', ['$http', '$rootScope', function ($http, $rootScope) {
+withmatchingServices.factory('AjaxCallService', ['$http', '$rootScope', function ($http, $rootScope) {
 	return {
 		call: function (method, data, onSuccess, onError) {
 			$rootScope.ajaxLoading = true;
@@ -34,7 +34,7 @@ spreasyServices.factory('AjaxCallService', ['$http', '$rootScope', function ($ht
 	
 }]);
 
-spreasyServices.factory('SessionUser', function () {
+withmatchingServices.factory('SessionUser', function () {
 	var user = {
 			name: null,
 			id: 0,

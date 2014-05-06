@@ -1,0 +1,20 @@
+<div class="row">
+	<div class="col-md-4">
+		<form class="form-horizontal" role="form" data-ng-submit="saveTest()">
+		  <div class="form-group">
+		    <label class="sr-only" for="tName">Name</label>
+		    <input type="text" class="form-control" id="tName" data-ng-model="tName" placeholder="Name">
+		  </div>
+		  <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Test</button>
+		</form>
+	</div>
+	<div class="col-md-8">
+		<ul class="list-group">
+		  <li data-ng-repeat="test in tests" class="list-group-item">
+		  <button type="button" data-ng-click="deleteTest(test, $index)" class="btn btn-danger btn-xs pull-right"><span class="glyphicon glyphicon-trash"></span></button>
+		  <span class="badge">{{ test.questions.length }}</span>
+		    <h4 class="list-group-item-heading">{{ test.name }}</h4>
+		  </li>
+		</ul>
+	</div>
+</div>

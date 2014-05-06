@@ -84,7 +84,8 @@ public class LoginServlet extends HttpServlet{
 				//login user
 				jsonResult = loginUser(request, response, req);
 				System.out.println("json result: " + jsonResult.toString());
-				resp.setResult(jsonResult.toJSONString());
+				//resp.setResult(jsonResult.toJSONString());
+				resp.setResult(jsonResult);
 			}
 			else if (method.equals("register"))
 			{
@@ -92,7 +93,7 @@ public class LoginServlet extends HttpServlet{
 				//TODO duplicates!
 				jsonResult = registerUser(req, resp);
 				System.out.println("json result to string: " + jsonResult.toString());
-				resp.setResult(jsonResult.toJSONString());
+				resp.setResult(jsonResult);
 			}
 			else if (isLoggedIn(request))
 			{
@@ -100,7 +101,7 @@ public class LoginServlet extends HttpServlet{
 					//logout user
 					jsonResult = logoutUser(request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				else if (method.equals("loadAllQuestions"))
 				{
@@ -112,7 +113,7 @@ public class LoginServlet extends HttpServlet{
 						JSONArray allQuestions = questions.toJSONArray();
 						jsonQuestions.put("allQuestions", allQuestions);
 						System.out.println("jsonQuestions: " + jsonQuestions.toString());
-						resp.setResult(jsonQuestions.toJSONString());
+						resp.setResult(jsonQuestions);
 					}
 					else
 					{
@@ -124,21 +125,21 @@ public class LoginServlet extends HttpServlet{
 					//add question
 					jsonResult = addQuestion(req, request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				else if(method.equals("deleteQuestion"))
 				{
 					//delete question
 					jsonResult = deleteQuestion(req, request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				else if(method.equals("udpateQuestion"))
 				{
 					//update question
 					jsonResult = updateQuestion(req, request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				else if (method.equals("loadAllTests"))
 				{
@@ -150,7 +151,8 @@ public class LoginServlet extends HttpServlet{
 						JSONArray allTests = tests.toJSONArray();
 						jsonTests.put("allTests", allTests);
 						System.out.println("jsonTests: " + jsonTests.toString());
-						resp.setResult(jsonTests.toJSONString());
+						resp.setResult(jsonTests);
+						
 					}
 					else
 					{
@@ -162,21 +164,21 @@ public class LoginServlet extends HttpServlet{
 					//add question
 					jsonResult = addTest(req, request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				else if(method.equals("deleteTest"))
 				{
 					//delete question
 					jsonResult = deleteTest(req, request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				else if(method.equals("updateTest"))
 				{
 					//update question
 					jsonResult = updateTest(req, request);
 					System.out.println("json result: " + jsonResult.toString());
-					resp.setResult(jsonResult.toJSONString());
+					resp.setResult(jsonResult);
 				}
 				/*
 				JSONObject json = new JSONObject();
@@ -485,6 +487,7 @@ public class LoginServlet extends HttpServlet{
 		int questionId = np.getInt("id");
 		String questionBody = np.getString("body");
 		String questionAnswer = np.getString("answer");
+		
 		int qOwnerId = np.getInt("ownerId");
 		
 		User u = getCurrentUser(request);

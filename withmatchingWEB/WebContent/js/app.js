@@ -24,5 +24,15 @@ withmatching.config(['$stateProvider','$urlRouterProvider',
     	url: '/home',
         templateUrl: 'partials/home.html',
         controller: 'HomeCtrl'
-      });
+      }).
+      state('question', {
+      	url: '/question',
+          templateUrl: 'partials/question.html',
+          controller: 'QuestionCtrl'
+        }).
+    state('test', {
+      	url: '/test',
+          templateUrl: 'partials/test.html',
+          controller: 'TestCtrl'
+        });
   }]);
