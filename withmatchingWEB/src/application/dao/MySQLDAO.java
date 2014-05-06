@@ -605,11 +605,13 @@ public class MySQLDAO{
 	  q.setId(rs.getInt("ID"));
 	  q.setAnswer(rs.getString("Answer"));
 	  q.setBody(rs.getString("Body"));
+	  q.setOwnerId(rs.getInt("OwnerId"));
   }
   
   public void build(Test t, ResultSet rs) throws SQLException {
 	  t.setId(rs.getInt("ID"));
 	  t.setName(rs.getString("Name"));
+	  t.setOwnerId(rs.getInt("OwnerId"));
   }
   
   /**

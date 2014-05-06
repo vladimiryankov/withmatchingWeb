@@ -28,6 +28,7 @@ public class TestController {
 			MySQLDAO dao = new MySQLDAO();
 			Test insertedTest = dao.insertTest(t);
 			
+			
 			return insertedTest;
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -262,7 +262,7 @@ public class LoginServlet extends HttpServlet{
 				//json object for the result
 				JSONObject jsonAddTest = new JSONObject();
 				
-				//get question
+				//get test
 				Map<String,Object> params = req.getNamedParams();
 				NamedParamsRetriever np = new NamedParamsRetriever(params);
 				Map<String, Object> tParams = np.getMap("test");
@@ -273,8 +273,9 @@ public class LoginServlet extends HttpServlet{
 				User u = getCurrentUser(request);
 				int userID = (int) u.getId();
 				
-				//return ID of Question if added successfully
+				//return test if added successfully
 				Test t = TestController.addTest(name, userID);
+				System.out.println("add test: " + t.toJSONObject().toString());
 				jsonAddTest.put("test", t.toJSONObject());
 				return jsonAddTest;
 	}

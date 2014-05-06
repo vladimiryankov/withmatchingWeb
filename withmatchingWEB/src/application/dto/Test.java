@@ -62,7 +62,10 @@ public class Test implements IToJSON{
 		json.put("id", this.getId());
 		json.put("name", this.getName());
 		json.put("ownerId", this.getOwnerId());
-		json.put("questions", this.getQuestions().toJSONArray());
+		if	(this.getQuestions() != null)
+		{
+			json.put("questions", this.getQuestions().toJSONArray());
+		}
 		
 		return json;
 	}
