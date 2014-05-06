@@ -197,15 +197,17 @@ public class LoginServlet extends HttpServlet{
 		}
 	}
 
-	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException {
+	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
 		JSONObject jsonUpdateTest = new JSONObject();
 		
 		//get question
 		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		int testId = np.getInt("id");
-		String testName = np.getString("name");
-		int tOwnerId = np.getInt("ownerId");
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		int testId = testNp.getInt("id");
+		String testName = testNp.getString("name");
+		int tOwnerId = testNp.getInt("ownerId");
 		
 		User u = getCurrentUser(request);
 		
@@ -222,19 +224,21 @@ public class LoginServlet extends HttpServlet{
 		}
 		else
 		{
-			throw new PrivilegedActionException(null);
+			throw new Exception("no privileges");
 		}
 	}
 
-	private JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException {
+	private JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
 		//create json object for the result
 		JSONObject jsonDeleteTest = new JSONObject();
 		
 		//get question id
 		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		int testId = np.getInt("id");
-		int tOwnerId = np.getInt("ownerId");
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		int testId = testNp.getInt("id");
+		int tOwnerId = testNp.getInt("ownerId");
 		
 		User u = getCurrentUser(request);
 		
@@ -243,16 +247,14 @@ public class LoginServlet extends HttpServlet{
 		{
 
 			//remove question from database
-			Test testDeleted;
-			testDeleted = TestController.deleteTest(testId);
+			TestController.deleteTest(testId);
 			
 			//send result
-			jsonDeleteTest.put("test", testDeleted.toJSONObject());
 			return jsonDeleteTest;
 		}
 		else
 		{
-			throw new PrivilegedActionException(null);
+			throw new Exception("no privileges");
 		}
 	}
 
@@ -263,7 +265,9 @@ public class LoginServlet extends HttpServlet{
 				//get question
 				Map<String,Object> params = req.getNamedParams();
 				NamedParamsRetriever np = new NamedParamsRetriever(params);
-				String name = np.getString("name");
+				Map<String, Object> tParams = np.getMap("test");
+				NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+				String name = testNp.getString("name");
 				
 				//get user
 				User u = getCurrentUser(request);
@@ -322,7 +326,7 @@ public class LoginServlet extends HttpServlet{
 			
 			if (!(u.getEmail().equals(email)))
 			{
-				throw new Exception();
+				throw new Exception("incorrect email");
 			}
 			else
 			{
@@ -347,7 +351,7 @@ public class LoginServlet extends HttpServlet{
 				}
 				else
 				{
-					throw new Exception();
+					throw new Exception("password missmatch");
 				}
 			}
 	}
@@ -429,14 +433,18 @@ public class LoginServlet extends HttpServlet{
 		JSONObject jsonAddQuestion = new JSONObject();
 		
 		//get question
+		System.out.println(req.toString());
 		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		String body = np.getString("body");
-		String answer = np.getString("answer");
+		Map<String, Object> qParams = np.getMap("question");
+		NamedParamsRetriever questionNp = new NamedParamsRetriever(qParams);
+		String body = questionNp.getString("body");
+		String answer = questionNp.getString("answer");
 		
 		//get user
 		User u = getCurrentUser(request);
 		int userID = (int) u.getId();
+		System.out.println("current user id" + userID);
 		
 		//return ID of Question if added successfully
 		Question q = QuestionController.addQuestion(body, answer, userID);
@@ -446,7 +454,7 @@ public class LoginServlet extends HttpServlet{
 		return jsonAddQuestion;
 	}
 	
-	public JSONObject deleteQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException
+	public JSONObject deleteQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception
 	{
 		//create json object for the result
 		JSONObject jsonDeleteQuestion = new JSONObject();
@@ -454,41 +462,46 @@ public class LoginServlet extends HttpServlet{
 		//get question id
 		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		int questionId = np.getInt("id");
-		int qOwnwerId = np.getInt("ownerId");
+		Map<String, Object> qParams = np.getMap("question");
+		NamedParamsRetriever questionNp = new NamedParamsRetriever(qParams);
+		int questionId = questionNp.getInt("id");
+		int qOwnwerId = questionNp.getInt("ownerId");
 		
 		User u = getCurrentUser(request);
 		
 		//check for user privilleges
 		if	(u.getId() == qOwnwerId)
 		{
-
 			//remove question from database
 			
-			Question questionDeleted = QuestionController.deleteQuestion(questionId);
+			QuestionController.deleteQuestion(questionId);
 			
 			//send result
-			jsonDeleteQuestion.put("question", questionDeleted.toJSONObject());
 			return jsonDeleteQuestion;
 		}
 		else
 		{
-			throw new PrivilegedActionException(null);
+
+			System.out.println("current user id: " + u.getId());
+			System.out.println("question owner id: " + qOwnwerId);
+			throw new Exception("no privileges");
 		}
 	}
 	
-	public JSONObject updateQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException
+	public JSONObject updateQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception
 	{
 		JSONObject jsonUpdateQuestion = new JSONObject();
 		
 		//get question
 		Map<String,Object> params = req.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		int questionId = np.getInt("id");
-		String questionBody = np.getString("body");
-		String questionAnswer = np.getString("answer");
+		Map<String, Object> qParams = np.getMap("question");
+		NamedParamsRetriever questionNp = new NamedParamsRetriever(qParams);
+		int questionId = questionNp.getInt("id");
+		String questionBody = questionNp.getString("body");
+		String questionAnswer = questionNp.getString("answer");
 		
-		int qOwnerId = np.getInt("ownerId");
+		int qOwnerId = questionNp.getInt("ownerId");
 		
 		User u = getCurrentUser(request);
 		
@@ -504,7 +517,7 @@ public class LoginServlet extends HttpServlet{
 		}
 		else
 		{
-			throw new PrivilegedActionException(null);
+			throw new Exception("no privileges");
 		}
 	}
 }

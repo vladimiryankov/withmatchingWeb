@@ -91,7 +91,7 @@ withmatchingControllers.controller('QuestionCtrl', ['$scope', '$state', 'Session
 	);
 	
 	$scope.saveQuestion = function () {
-		AjaxCallService.call('addQuestion',{uid: SessionUser.getId(), household: {body: $scope.qBody, answer: $scope.qAnswer}}, 
+		AjaxCallService.call('addQuestion',{uid: SessionUser.getId(), question: {body: $scope.qBody, answer: $scope.qAnswer}}, 
 				function onSuccess(data) {
 					$scope.questions.push(data.question);
 				},

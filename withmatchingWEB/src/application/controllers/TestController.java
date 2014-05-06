@@ -35,16 +35,14 @@ public class TestController {
 		return null;
 	}
 	
-	public static Test deleteTest(int testId)
+	public static void deleteTest(int testId)
 	{
 		try {
 			MySQLDAO dao = new MySQLDAO();
-			Test t = dao.deleteTest(testId);
-			return t;
+			dao.deleteTest(testId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
 	}
 	
 	

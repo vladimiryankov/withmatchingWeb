@@ -35,16 +35,14 @@ public class QuestionController {
 		return null;
 	}
 
-	public static Question deleteQuestion(int questionID) {
+	public static void deleteQuestion(int questionID) {
 		try {
 			MySQLDAO dao = new MySQLDAO();
-			Question q = dao.deleteQuestion(questionID);
-			return q;
+			dao.deleteQuestion(questionID);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
 	}
 
 	public static Question updateQuestion(int questionId, String questionBody,

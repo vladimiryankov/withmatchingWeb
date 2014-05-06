@@ -276,10 +276,8 @@ public class MySQLDAO{
 	  }
   }
   
-  public Question deleteQuestion (int qid) throws Exception {
+  public void deleteQuestion (int qid) throws Exception {
 	  try {
-		  Question q = loadQuestion(qid);
-		  
 		  //prepare statement
 		  preparedStatement = connect.prepareStatement(deleteSQLQuestion);
 		 
@@ -289,7 +287,7 @@ public class MySQLDAO{
 		  
 		  preparedStatement.executeUpdate();
 		  
-		  return q;
+		  
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {
@@ -298,9 +296,8 @@ public class MySQLDAO{
 	  
   }
   
-  public Test deleteTest(int tid) throws Exception {
+  public void deleteTest(int tid) throws Exception {
 	  try {
-		  Test t = loadTest(tid);
 		  //prepare statement
 		  preparedStatement = connect.prepareStatement(deleteSQLTest);
 		  //build prepared statement
@@ -309,9 +306,6 @@ public class MySQLDAO{
 		  
 		  preparedStatement.executeUpdate();
 		  
-		  
-	      
-	      return t;
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {

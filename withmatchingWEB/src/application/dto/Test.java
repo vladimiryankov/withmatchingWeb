@@ -62,6 +62,7 @@ public class Test implements IToJSON{
 		json.put("id", this.getId());
 		json.put("name", this.getName());
 		json.put("ownerId", this.getOwnerId());
+		json.put("questions", this.getQuestions().toJSONArray());
 		
 		return json;
 	}
@@ -73,6 +74,7 @@ public class Test implements IToJSON{
 		t.setId((int) json.get("id"));
 		t.setName((String) json.get("name"));
 		t.setOwnerId((int) json.get("ownerId"));
+		t.setQuestions((QuestionsList) json.get("questions"));
 		
 		return t;
 	}
