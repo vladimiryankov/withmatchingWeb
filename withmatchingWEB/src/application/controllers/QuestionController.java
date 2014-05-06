@@ -18,7 +18,7 @@ public class QuestionController {
 		return null;
 	}
 
-	public static int addQuestion(String body, String answer, int userID) {
+	public static Question addQuestion(String body, String answer, int userID) {
 		try {
 			Question q = new Question();
 			q.setBody(body);
@@ -28,35 +28,35 @@ public class QuestionController {
 			MySQLDAO dao = new MySQLDAO();
 			Question insertedQ = dao.insertQuestion(q);
 			
-			return insertedQ.getId();
+			return insertedQ;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 
-	public static boolean deleteQuestion(int questionID) {
+	public static Question deleteQuestion(int questionID) {
 		try {
 			MySQLDAO dao = new MySQLDAO();
-			dao.deleteQuestion(questionID);
-			return true;
+			Question q = dao.deleteQuestion(questionID);
+			return q;
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
+		return null;
 	}
 
-	public static int updateQuestion(int questionId, String questionBody,
+	public static Question updateQuestion(int questionId, String questionBody,
 			String questionAnswer) {
 		try {
 			MySQLDAO dao = new MySQLDAO();
-			int qid = dao.updateQuestion(questionBody, questionAnswer, questionId);
-			return qid;
+			Question q = dao.updateQuestion(questionBody, questionAnswer, questionId);
+			return q;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 	
 }

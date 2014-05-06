@@ -204,9 +204,8 @@ public class MySQLDAO{
 	  }
   }
   
-  public int updateQuestion (String body, String answer, int qid) throws Exception {
+  public Question updateQuestion (String body, String answer, int qid) throws Exception {
 	  try {
-		  
 		  //prepare statement
 		  preparedStatement = connect.prepareStatement(updateSQLQuestion);
 		  int i = 1;
@@ -217,7 +216,9 @@ public class MySQLDAO{
 		  
 		  preparedStatement.executeUpdate();
 		  
-		  return qid;
+		  Question q = loadQuestion(qid);
+		  
+		  return q;
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {
@@ -236,10 +237,9 @@ public class MySQLDAO{
 		  preparedStatement.setString(i++, testName);
 		  preparedStatement.setInt(i++, testId);
 		  
-		  
 		  preparedStatement.executeUpdate();
 		  
-		//save test questions
+		  //save test questions
 		  saveTestQuestions(t);
 	      
 	      return t;
@@ -276,8 +276,9 @@ public class MySQLDAO{
 	  }
   }
   
-  public void deleteQuestion (int qid) throws Exception {
+  public Question deleteQuestion (int qid) throws Exception {
 	  try {
+		  Question q = loadQuestion(qid);
 		  
 		  //prepare statement
 		  preparedStatement = connect.prepareStatement(deleteSQLQuestion);
@@ -288,7 +289,7 @@ public class MySQLDAO{
 		  
 		  preparedStatement.executeUpdate();
 		  
-		  
+		  return q;
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {
@@ -297,9 +298,9 @@ public class MySQLDAO{
 	  
   }
   
-  public int deleteTest(int tid) throws Exception {
+  public Test deleteTest(int tid) throws Exception {
 	  try {
-		  
+		  Test t = loadTest(tid);
 		  //prepare statement
 		  preparedStatement = connect.prepareStatement(deleteSQLTest);
 		  //build prepared statement
@@ -310,7 +311,7 @@ public class MySQLDAO{
 		  
 		  
 	      
-	      return tid;
+	      return t;
 	    } catch (SQLException e) {
 		  throw new Exception("SQL Error: "+e.getMessage());
 		} finally {

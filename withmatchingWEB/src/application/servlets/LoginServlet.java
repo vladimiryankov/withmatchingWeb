@@ -2,6 +2,7 @@ package application.servlets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -12,11 +13,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import application.controllers.QuestionController;
 import application.controllers.TestController;
 import application.dao.MySQLDAO;
+import application.dto.Question;
 import application.dto.QuestionsList;
+import application.dto.Test;
 import application.dto.TestsList;
 import application.dto.User;
 import application.util.PassEncript;
@@ -105,7 +109,8 @@ public class LoginServlet extends HttpServlet{
 					if (questions != null)
 					{
 						JSONObject jsonQuestions = new JSONObject();
-						jsonQuestions.put("allQuestions", questions);
+						JSONArray allQuestions = questions.toJSONArray();
+						jsonQuestions.put("allQuestions", allQuestions);
 						System.out.println("jsonQuestions: " + jsonQuestions.toString());
 						resp.setResult(jsonQuestions.toJSONString());
 					}
@@ -142,7 +147,8 @@ public class LoginServlet extends HttpServlet{
 					if (tests != null)
 					{
 						JSONObject jsonTests = new JSONObject();
-						jsonTests.put("allTests", tests);
+						JSONArray allTests = tests.toJSONArray();
+						jsonTests.put("allTests", allTests);
 						System.out.println("jsonTests: " + jsonTests.toString());
 						resp.setResult(jsonTests.toJSONString());
 					}
@@ -189,7 +195,7 @@ public class LoginServlet extends HttpServlet{
 		}
 	}
 
-	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
+	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException {
 		JSONObject jsonUpdateTest = new JSONObject();
 		
 		//get question
@@ -201,35 +207,24 @@ public class LoginServlet extends HttpServlet{
 		
 		User u = getCurrentUser(request);
 		
-		//check for privilleges
+		//check for privileges
 		if	(u.getId() == tOwnerId)
 		{
 			//update question in database
-			int tidUpdated = TestController.updateTest(testId, testName);
+			Test testUpdated = TestController.updateTest(testId, testName);
 			
 			//return result
-			if(tidUpdated > -1 && tidUpdated == testId)
-			{
-				jsonUpdateTest.put("message", "test updated");
-				jsonUpdateTest.put("id", tidUpdated);
-				jsonUpdateTest.put("name", testName);
-				return jsonUpdateTest;
-			}
-			else
-			{
-				jsonUpdateTest.put("error", "error occured updating test");
-				return jsonUpdateTest;
-			}
+			jsonUpdateTest.put("updatedTest", testUpdated.toJSONObject());
+			
+			return jsonUpdateTest;
 		}
 		else
 		{
-			jsonUpdateTest.put("error", "the user has no privilleges");
-			return jsonUpdateTest;
+			throw new PrivilegedActionException(null);
 		}
-		
 	}
 
-	private JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
+	private JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException {
 		//create json object for the result
 		JSONObject jsonDeleteTest = new JSONObject();
 		
@@ -241,31 +236,21 @@ public class LoginServlet extends HttpServlet{
 		
 		User u = getCurrentUser(request);
 		
-		//check for privilleges
+		//check for privileges
 		if	(u.getId() == tOwnerId)
 		{
 
 			//remove question from database
-			int testDeletedId;
-			testDeletedId = TestController.deleteTest(testId);
+			Test testDeleted;
+			testDeleted = TestController.deleteTest(testId);
 			
 			//send result
-			if(testDeletedId == testId)
-			{
-				jsonDeleteTest.put("message", "test deleted");
-				jsonDeleteTest.put("testId", testId);
-				return jsonDeleteTest;
-			}
-			else
-			{
-				jsonDeleteTest.put("error", "error occured deleting test");
-				return jsonDeleteTest;
-			}
+			jsonDeleteTest.put("test", testDeleted.toJSONObject());
+			return jsonDeleteTest;
 		}
 		else
 		{
-			jsonDeleteTest.put("error", "user has no privilleges");
-			return jsonDeleteTest;
+			throw new PrivilegedActionException(null);
 		}
 	}
 
@@ -283,28 +268,18 @@ public class LoginServlet extends HttpServlet{
 				int userID = (int) u.getId();
 				
 				//return ID of Question if added successfully
-				int tid = TestController.addTest(name, userID);
-				if (tid > -1)
-				{
-					jsonAddTest.put("id", tid);
-					jsonAddTest.put("body", name);
-					return jsonAddTest;
-				}
-				else
-				{
-					jsonAddTest.put("error", "error occured adding the test");
-					return jsonAddTest;
-				}
+				Test t = TestController.addTest(name, userID);
+				jsonAddTest.put("test", t.toJSONObject());
+				return jsonAddTest;
 	}
 
-	public JSONObject registerUser(JSONRPC2Request request, JSONRPC2Response response) {
+	public JSONObject registerUser(JSONRPC2Request request, JSONRPC2Response response) throws Exception {
 		
 		@SuppressWarnings("unused")
 		JSONRPC2ParamsType paramsType = request.getParamsType();
 		Map<String,Object> params = request.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
 		JSONObject jsonRegistration = new JSONObject();
-		try {
 			//create new user
 			User u = new User();
 			
@@ -317,36 +292,19 @@ public class LoginServlet extends HttpServlet{
 			MySQLDAO dao = new MySQLDAO();
 			dao.insertUser(u);
 			
-			//it is a good practice to wrap the result object in a named property
-			//in our case a user property
-			JSONObject userJSON = new JSONObject();
-			//instead of doing this every time this way
-			//it would be much cleaner to have a toJSONObject method in the user class
-			userJSON.put("name", u.getName());
-			userJSON.put("email", u.getEmail());
-			userJSON.put("userId", u.getId());
-			//put the whole user json as user property in the result
-			jsonRegistration.put("user", userJSON);
+			jsonRegistration.put("user", u.toJSONObject());
 			
 			return jsonRegistration;
-		} catch (Exception e) {
-			e.printStackTrace();
-			jsonRegistration.put("message", "error occured");
-			return jsonRegistration;
-		}
-		
 	}
 	
-	public JSONObject loginUser(HttpServletRequest request, HttpServletResponse response, JSONRPC2Request jsonReq) throws JSONRPC2Error
+	public JSONObject loginUser(HttpServletRequest request, HttpServletResponse response, JSONRPC2Request jsonReq) throws Exception
 	{
 		//define new json for the result
 		JSONObject jsonLogin = new JSONObject();
 		//get user info
 		Map<String,Object> params = jsonReq.getNamedParams();
 		NamedParamsRetriever np = new NamedParamsRetriever(params);
-		
-		try {
-
+	
 			String password = PassEncript.PassHash(np.getString("password"));
 			System.out.println("input pass " + password);
 			
@@ -362,8 +320,7 @@ public class LoginServlet extends HttpServlet{
 			
 			if (!(u.getEmail().equals(email)))
 			{
-				jsonLogin.put("message", "user doesn't exist");
-				return jsonLogin;
+				throw new Exception();
 			}
 			else
 			{
@@ -383,24 +340,14 @@ public class LoginServlet extends HttpServlet{
 					response.addCookie(pass);
 					
 					//return result
-					jsonLogin.put("userId", u.getId());
-					jsonLogin.put("name", u.getName());
-					jsonLogin.put("email", email);
+					jsonLogin.put("user", u.toJSONObject());
 					return jsonLogin;
 				}
 				else
 				{
-					jsonLogin.put("message", "incorrect password");
-					return jsonLogin;
+					throw new Exception();
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			JSONObject jsonError = new JSONObject();
-			jsonError.put("error", "error occured");
-			return jsonError;
-		}
-		
 	}
 	
 	public User getCurrentUser(HttpServletRequest request)
@@ -467,8 +414,10 @@ public class LoginServlet extends HttpServlet{
 		request.getSession().invalidate();
 		
 		//send result
+
+		User u = getCurrentUser(request);
 		JSONObject jsonLogout = new JSONObject();
-		jsonLogout.put("sessionOver", session);
+		jsonLogout.put("user", u.toJSONObject());
 		return jsonLogout;
 	}
 	
@@ -488,22 +437,14 @@ public class LoginServlet extends HttpServlet{
 		int userID = (int) u.getId();
 		
 		//return ID of Question if added successfully
-		int qid = QuestionController.addQuestion(body, answer, userID);
-		if (qid > -1)
-		{
-			jsonAddQuestion.put("id", qid);
-			jsonAddQuestion.put("body", body);
-			jsonAddQuestion.put("answer", answer);
-			return jsonAddQuestion;
-		}
-		else
-		{
-			jsonAddQuestion.put("error", "error occured adding the question");
-			return jsonAddQuestion;
-		}
+		Question q = QuestionController.addQuestion(body, answer, userID);
+		
+		jsonAddQuestion.put("question", q.toJSONObject());
+		
+		return jsonAddQuestion;
 	}
 	
-	public JSONObject deleteQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
+	public JSONObject deleteQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException
 	{
 		//create json object for the result
 		JSONObject jsonDeleteQuestion = new JSONObject();
@@ -521,30 +462,20 @@ public class LoginServlet extends HttpServlet{
 		{
 
 			//remove question from database
-			boolean questionDeleted = false;
-			questionDeleted = QuestionController.deleteQuestion(questionId);
+			
+			Question questionDeleted = QuestionController.deleteQuestion(questionId);
 			
 			//send result
-			if(questionDeleted)
-			{
-				jsonDeleteQuestion.put("message", "question deleted");
-				jsonDeleteQuestion.put("questionId", questionId);
-				return jsonDeleteQuestion;
-			}
-			else
-			{
-				jsonDeleteQuestion.put("error", "error occured deleting question");
-				return jsonDeleteQuestion;
-			}
+			jsonDeleteQuestion.put("question", questionDeleted.toJSONObject());
+			return jsonDeleteQuestion;
 		}
 		else
 		{
-			jsonDeleteQuestion.put("error", "user has no privilleges");
-			return jsonDeleteQuestion;
+			throw new PrivilegedActionException(null);
 		}
 	}
 	
-	public JSONObject updateQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error
+	public JSONObject updateQuestion(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, PrivilegedActionException
 	{
 		JSONObject jsonUpdateQuestion = new JSONObject();
 		
@@ -562,27 +493,15 @@ public class LoginServlet extends HttpServlet{
 		if (u.getId() == qOwnerId)
 		{
 			//update question in database
-			int qidUpdated = QuestionController.updateQuestion(questionId, questionBody, questionAnswer);
+			Question qUpdated = QuestionController.updateQuestion(questionId, questionBody, questionAnswer);
 			
 			//return result
-			if(qidUpdated > -1 && qidUpdated == questionId)
-			{
-				jsonUpdateQuestion.put("message", "question updated");
-				jsonUpdateQuestion.put("id", qidUpdated);
-				jsonUpdateQuestion.put("body", questionBody);
-				jsonUpdateQuestion.put("answer", questionAnswer);
-				return jsonUpdateQuestion;
-			}
-			else
-			{
-				jsonUpdateQuestion.put("error", "error occured updating question");
-				return jsonUpdateQuestion;
-			}
+			jsonUpdateQuestion.put("question", qUpdated.toJSONObject());
+			return jsonUpdateQuestion;
 		}
 		else
 		{
-			jsonUpdateQuestion.put("error", "the user has no privilleges");
-			return jsonUpdateQuestion;
+			throw new PrivilegedActionException(null);
 		}
 	}
 }

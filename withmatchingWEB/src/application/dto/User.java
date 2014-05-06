@@ -1,6 +1,9 @@
 package application.dto;
 
-public class User {
+import net.minidev.json.JSONObject;
+import application.util.IToJSON;
+
+public class User implements IToJSON{
 
 	private int id;
 	private String name;
@@ -42,6 +45,30 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	@Override
+	public JSONObject toJSONObject() {
+		JSONObject json = new JSONObject();
+		
+		json.put("id", this.getId());
+		json.put("name", this.getName());
+		json.put("email", this.getEmail());
+		json.put("password", this.getPassword());
+		
+		return json;
+	}
+	
+	public User createUser(JSONObject json)
+	{
+		User u = new User();
+		
+		u.setId((int) json.get("id"));
+		u.setName((String) json.get("name"));
+		u.setEmail((String) json.get("email"));
+		u.setPassword((String) json.get("password"));
+		
+		return u;
 	}
 	
 }

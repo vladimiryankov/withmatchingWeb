@@ -1,6 +1,9 @@
 package application.dto;
 
-public class Test {
+import net.minidev.json.JSONObject;
+import application.util.IToJSON;
+
+public class Test implements IToJSON{
 	
 	private int id;
 	private String name;
@@ -49,5 +52,28 @@ public class Test {
 	@Override
 	public String toString() {
 		return this.getName();
+	}
+
+
+	@Override
+	public JSONObject toJSONObject() {
+		JSONObject json = new JSONObject();
+		
+		json.put("id", this.getId());
+		json.put("name", this.getName());
+		json.put("ownerId", this.getOwnerId());
+		
+		return json;
+	}
+	
+	public Test createTest(JSONObject json)
+	{
+		Test t = new Test();
+		
+		t.setId((int) json.get("id"));
+		t.setName((String) json.get("name"));
+		t.setOwnerId((int) json.get("ownerId"));
+		
+		return t;
 	}
 }

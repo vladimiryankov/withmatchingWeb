@@ -2,10 +2,12 @@ package application.dto;
 
 import java.io.IOException;
 
+import net.minidev.json.JSONObject;
 import application.util.Base64;
+import application.util.IToJSON;
 import javafx.beans.property.SimpleStringProperty;
 
-public class Question {
+public class Question implements IToJSON{
 	private SimpleStringProperty id;
 	private SimpleStringProperty body;
 	private SimpleStringProperty answer;
@@ -65,6 +67,32 @@ public class Question {
 			// TODO Auto-generated catch block
 			throw e;
 		}
+	}
+
+	@Override
+	public JSONObject toJSONObject() {
+		JSONObject json = new JSONObject();
+		
+		json.put("id", this.getId());
+		json.put("body", this.getBody());
+		json.put("answer", this.getAnswer());
+		json.put("ownerId", this.getOwnerId());
+		
+		return json;
+	}
+	
+	public Question createQuestion(JSONObject json) {
+		Question q = new Question();
+		
+		if	(json.containsValue("id"))
+		{
+			q.setId((int) json.get("id"));
+			q.setAnswer((String) json.get("answer"));
+			q.setBody((String) json.get("body"));
+			q.setOwnerId((int) json.get("ownerId"));
+		}
+		
+		return q;
 	}
 	
 }

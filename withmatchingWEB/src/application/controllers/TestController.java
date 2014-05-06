@@ -18,7 +18,7 @@ public class TestController {
 		return null;
 	}
 	
-	public static int addTest(String name, int ownerId)
+	public static Test addTest(String name, int ownerId)
 	{
 		try {
 			Test t = new Test();
@@ -28,36 +28,36 @@ public class TestController {
 			MySQLDAO dao = new MySQLDAO();
 			Test insertedTest = dao.insertTest(t);
 			
-			return insertedTest.getId();
+			return insertedTest;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 	
-	public static int deleteTest(int testId)
+	public static Test deleteTest(int testId)
 	{
 		try {
 			MySQLDAO dao = new MySQLDAO();
-			int tid = dao.deleteTest(testId);
-			return tid;
+			Test t = dao.deleteTest(testId);
+			return t;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 	
 	
-	public static int updateTest(int testId, String testName)
+	public static Test updateTest(int testId, String testName)
 	{
 		try {
 			MySQLDAO dao = new MySQLDAO();
 			Test t = dao.updateTest(testId, testName);
-			return t.getId();
+			return t;
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 }

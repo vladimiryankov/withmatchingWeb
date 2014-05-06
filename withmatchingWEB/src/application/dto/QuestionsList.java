@@ -2,7 +2,10 @@ package application.dto;
 
 import java.util.ArrayList;
 
-public class QuestionsList extends ArrayList<Question> {
+import net.minidev.json.JSONArray;
+import application.util.IToJSONArray;
+
+public class QuestionsList extends ArrayList<Question> implements IToJSONArray {
 
 	/**
 	 * 
@@ -17,6 +20,17 @@ public class QuestionsList extends ArrayList<Question> {
 		}
 		
 		return cqList;
+	}
+
+	@Override
+	public JSONArray toJSONArray() {
+		JSONArray jsonQuestions = new JSONArray();
+		
+		for (Question q: this) {
+			jsonQuestions.add(q.toJSONObject());
+		}
+		
+		return jsonQuestions;
 	}
 
 }
