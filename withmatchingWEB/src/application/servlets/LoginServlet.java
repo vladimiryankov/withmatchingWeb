@@ -317,10 +317,17 @@ public class LoginServlet extends HttpServlet{
 			MySQLDAO dao = new MySQLDAO();
 			dao.insertUser(u);
 			
+			//it is a good practice to wrap the result object in a named property
+			//in our case a user property
+			JSONObject userJSON = new JSONObject();
+			//instead of doing this every time this way
+			//it would be much cleaner to have a toJSONObject method in the user class
+			userJSON.put("name", u.getName());
+			userJSON.put("email", u.getEmail());
+			userJSON.put("userId", u.getId());
+			//put the whole user json as user property in the result
+			jsonRegistration.put("user", userJSON);
 			
-			jsonRegistration.put("name", u.getName());
-			jsonRegistration.put("email", u.getEmail());
-			jsonRegistration.put("userId", u.getId());
 			return jsonRegistration;
 		} catch (Exception e) {
 			e.printStackTrace();

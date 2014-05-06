@@ -17,7 +17,7 @@ spreasyServices.factory('AjaxCallService', ['$http', '$rootScope', function ($ht
 				jsonrpc('LoginServlet', method, data).
 			success(function onAjaxSuccess(resp, status, headers, config) {
 				$rootScope.ajaxLoading = false;
-				if (resp.error != "undefined") {
+				if (typeof(resp.error) != "undefined") {
 					onError(resp.error.message);
 					console.log(resp.error);
 				} else {
