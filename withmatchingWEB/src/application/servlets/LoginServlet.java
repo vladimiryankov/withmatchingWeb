@@ -1,8 +1,12 @@
 package application.servlets;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -18,6 +22,7 @@ import net.minidev.json.JSONObject;
 import application.controllers.QuestionController;
 import application.controllers.TestController;
 import application.dao.MySQLDAO;
+import application.dto.CheckableQuestion;
 import application.dto.Question;
 import application.dto.QuestionsList;
 import application.dto.Test;
@@ -25,6 +30,12 @@ import application.dto.TestsList;
 import application.dto.User;
 import application.util.PassEncript;
 import application.util.TimeEncrpyt;
+
+
+
+
+
+
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -159,6 +170,14 @@ public class LoginServlet extends HttpServlet{
 						resp.setError(JSONRPC2Error.INTERNAL_ERROR);
 					}
 				}
+				else if (method.equals("loadQuestionsByTest"))
+				{
+					JSONArray testQuestions = new JSONArray();
+					testQuestions = loadQuestionsByTest(req, request);
+					jsonResult.put("testQuestions", testQuestions);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult);
+				}
 				else if(method.equals("addTest"))
 				{
 					//add question
@@ -180,6 +199,27 @@ public class LoginServlet extends HttpServlet{
 					System.out.println("json result: " + jsonResult.toString());
 					resp.setResult(jsonResult);
 				}
+				else if(method.equals("addTestQuestion"))
+				{
+					//bind question to test
+					jsonResult = addTestQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult);
+				}
+				else if(method.equals("removeTestQuestion"))
+				{
+					//delete question from test
+					jsonResult = removeTestQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult);
+				}
+				else if(method.equals("checkTest"))
+				{
+					//check if test is asnwered correctly
+					jsonResult = checkTest(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult);
+				}
 				/*
 				JSONObject json = new JSONObject();
 				json.put("hi", "opa");
@@ -195,6 +235,147 @@ public class LoginServlet extends HttpServlet{
 			response.getWriter().print(resp.toJSONObject().toJSONString());
 			System.out.println("final result: " + resp.toJSONObject().toJSONString());
 		}
+	}
+
+	private JSONObject checkTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jsonWrongQuestions = new JSONArray();
+		QuestionsList wrongQuestions = new QuestionsList();
+		
+		//retrievers
+		Map<String, Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		
+		//get guessed questions values
+		QuestionsList guessQuestions = new QuestionsList();
+		List<Object> questions = testNp.getList("questions");
+		for (Object q: questions)
+		{
+			guessQuestions.add((Question) q);
+		}
+		
+		//get test
+		int tid = testNp.getInt("id");
+		MySQLDAO dao = new MySQLDAO();
+		Test t = dao.loadTest(tid);
+		
+		//get true questions
+		QuestionsList trueQuestions = dao.loadQuestionsByTest(tid);
+		
+		//cycle through questions and find these with same id
+		for (Question tq: trueQuestions)
+		{
+			for (Question gq: guessQuestions)
+			{
+				if (tq.getId() == gq.getId())
+				{
+					//if answers are different, than there is mistake
+					if (!tq.getAnswer().equals(gq.getAnswer()))
+					{
+						wrongQuestions.add(gq);
+					}
+				}
+			}
+		}
+		
+		jsonWrongQuestions = wrongQuestions.toJSONArray();
+		jsonResult.put("test", t);
+		jsonResult.put("wrongQuestions", jsonWrongQuestions);
+		
+		return jsonResult;
+	}
+
+	private JSONObject removeTestQuestion(JSONRPC2Request req,
+			HttpServletRequest request) throws Exception, SQLException {
+		JSONObject jsonResult = new JSONObject();
+		
+		//set retrievers
+		Map<String, Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		Map<String, Object> qParams = np.getMap("question");
+		NamedParamsRetriever questNp = new NamedParamsRetriever(qParams);
+		
+		MySQLDAO dao = new MySQLDAO();
+		Test t = dao.loadTest(testNp.getInt(("id")));
+		Question q = dao.loadQuestion(questNp.getInt("id"));
+		
+		t = dao.deleteTestQuestion(t, q);
+		
+		JSONObject jsonTest = t.toJSONObject();
+		JSONObject jsonQuestion = q.toJSONObject();
+		
+		jsonResult.put("test", jsonTest);
+		jsonResult.put("question", jsonQuestion);
+		
+		return jsonResult;
+	}
+
+	private JSONObject addTestQuestion(JSONRPC2Request req,
+			HttpServletRequest request) throws Exception, SQLException {
+		JSONObject jsonResult = new JSONObject();
+		
+		//set retrievers
+		Map<String, Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		Map<String, Object> qParams = np.getMap("question");
+		NamedParamsRetriever questNp = new NamedParamsRetriever(qParams);
+		int tid = testNp.getInt(("id"));
+		int qid = questNp.getInt(("id"));
+		
+		//load test and question
+		MySQLDAO dao = new MySQLDAO();
+		Test t = dao.loadTest(tid);
+		Question q = dao.loadQuestion(qid);
+		
+		//check for duplicates
+		boolean duplicate = false;
+		for (Question quest: t.getQuestions())
+		{
+			if (quest.getId() == qid)
+			{
+				duplicate = true;
+			}
+		}
+		if (!duplicate)
+		{
+			t = dao.saveTestQuestion(t, q);
+		}
+		
+		//set result
+		JSONObject jsonTest = t.toJSONObject();
+		JSONObject jsonQuestion = q.toJSONObject();
+		
+		jsonResult.put("test", jsonTest);
+		jsonResult.put("question", jsonQuestion);
+		
+		return jsonResult;
+	}
+
+	private JSONArray loadQuestionsByTest(JSONRPC2Request req,
+			HttpServletRequest request) throws Exception, JSONRPC2Error {
+		JSONArray jsonTestQuestions = new JSONArray();
+		
+		//get testId
+		Map<String, Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		int testId = testNp.getInt("id");
+		
+		//get test questions
+		MySQLDAO dao = new MySQLDAO();
+		QuestionsList qByTest = dao.loadQuestionsByTest(testId);
+		
+		//set result
+		jsonTestQuestions = qByTest.toJSONArray();
+		
+		return jsonTestQuestions;
 	}
 
 	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {

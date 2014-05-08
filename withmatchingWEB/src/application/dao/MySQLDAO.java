@@ -50,7 +50,7 @@ public class MySQLDAO{
   protected static final String insertSQLTestQuestion = "INSERT INTO test_questions (Hash, QID, TID) VALUES(?, ?, ?)";
   protected static final String deleteSQLAllTestQuestions = "DELETE FROM test_questions WHERE TID = ?";
   protected static final String deleteSQLQuestionFromAllTests = "DELETE FROM test_questions WHERE QID = ?";
-  protected static final String deleteSQLTestQuestion = "DELETE FROM test_question WHERE Hash = ? AND TID = ? AND QID = ?";
+  protected static final String deleteSQLTestQuestion = "DELETE FROM test_question WHERE Hash = ? AND QID = ? AND TID = ?";
   
   
   public MySQLDAO() throws Exception {
@@ -352,6 +352,48 @@ public class MySQLDAO{
 		} finally {
 	      close();
 		}
+  }
+  
+  public Test saveTestQuestion(Test t, Question q) throws Exception {
+	  try {
+		  
+		  preparedStatement = connect.prepareStatement(insertSQLTestQuestion);
+		  
+		  int i = 1;
+		  
+		  preparedStatement.setString(i++, Question.generateHash(q.getId(), t.getId()));
+		  preparedStatement.setInt(i++, q.getId());
+		  preparedStatement.setInt(i++, t.getId());
+		  
+		  preparedStatement.executeUpdate();
+		  
+		  return t;
+	  } catch (SQLException e) {
+		  throw new Exception("SQL Error: "+e.getMessage());
+	  } finally {
+		close();
+	  }
+  }
+  
+  public Test deleteTestQuestion(Test t, Question q) throws Exception {
+	  try {
+		  
+		  preparedStatement = connect.prepareStatement(deleteSQLTestQuestion);
+		  
+		  int i = 1;
+		  
+		  preparedStatement.setString(i++, Question.generateHash(q.getId(), t.getId()));
+		  preparedStatement.setInt(i++, q.getId());
+		  preparedStatement.setInt(i++, t.getId());
+		  
+		  preparedStatement.executeUpdate();
+		  
+		  return t;
+	  } catch (SQLException e) {
+		  throw new Exception("SQL Error: "+e.getMessage());
+	  } finally {
+		close();
+	  }
   }
   
   /**

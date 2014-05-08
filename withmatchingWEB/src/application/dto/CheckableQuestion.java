@@ -2,6 +2,8 @@ package application.dto;
 
 import java.io.Serializable;
 
+import net.minidev.json.JSONObject;
+import application.util.IToJSON;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,7 +11,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.input.DataFormat;
 
-public class CheckableQuestion extends Question implements Serializable {
+public class CheckableQuestion extends Question implements Serializable, IToJSON{
 	
 
 
@@ -129,6 +131,28 @@ public class CheckableQuestion extends Question implements Serializable {
 			this.guess = new SimpleStringProperty();
 		}
 		this.guess.set(guess);
+	}
+	
+	public JSONObject toJSONObject() {
+		JSONObject json = new JSONObject();
+		
+		json.put("id", this.getId());
+		json.put("body", this.getBody());
+		json.put("answer", this.getAnswer());
+		json.put("ownerId", this.getOwnerId());
+		json.put("checked", this.checked.get());
+		
+		return json;
+	}
+	
+	public CheckableQuestion createQuestion(JSONObject json) {
+		Question q = createQuestion(json);
+		
+		CheckableQuestion cq = new CheckableQuestion(q);
+		
+		cq.setChecked((boolean) json.get("checked"));
+		
+		return cq;
 	}
 }
 
