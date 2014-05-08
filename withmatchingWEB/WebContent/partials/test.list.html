@@ -1,0 +1,21 @@
+<h4>{{ test.name }}</h4>
+<div class="row">
+	<div class="col-md-4">
+		<ul class="list-group">
+		  <li data-ng-repeat="question in allQuestions" class="list-group-item">
+		  <button type="button" data-ng-click="addTestQuestion(question)" class="btn btn-success btn-xs pull-right"><span class="glyphicon glyphicon-plus-sign"></span></button>
+		    <h4 class="list-group-item-heading">{{ question.body }}</h4>
+		    {{ question.answer }}
+		  </li>
+		</ul>
+	</div>
+	<div class="col-md-8">
+		<ul class="list-group">
+		  <li data-ng-repeat="tq in testQuestions" class="list-group-item">
+		  <button type="button" data-ng-click="deleteTestQuestion(tq, $index)" class="btn btn-danger btn-xs pull-right"><span class="glyphicon glyphicon-remove-sign"></span></button>
+		    <h4 class="list-group-item-heading">{{ tq.body }}</h4>
+		    {{ tq.answer }}
+		  </li>
+		</ul>
+	</div>
+</div>

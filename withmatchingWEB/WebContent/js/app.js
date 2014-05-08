@@ -34,5 +34,14 @@ withmatching.config(['$stateProvider','$urlRouterProvider',
       	url: '/test',
           templateUrl: 'partials/test.html',
           controller: 'TestCtrl'
-        });
+        }).
+     state('test.questions', {
+      	url: '/{testId}',
+      	views: {
+      		"@": {
+		        templateUrl: 'partials/test.list.html',
+		        controller: 'TestQuestionCtrl'
+      		}
+      	}
+      });
   }]);

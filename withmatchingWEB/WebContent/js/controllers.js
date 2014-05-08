@@ -148,3 +148,31 @@ withmatchingControllers.controller('TestCtrl', ['$scope', '$state', 'SessionUser
 		);
 	}
 }]);
+
+withmatchingControllers.controller('TestQuestionCtrl', ['$scope', '$state', 'SessionUser', 'AjaxCallService', '$stateParams',  function ($scope, $state, SessionUser, AjaxCallService, $stateParams) {
+	if (!SessionUser.isLoggedIn()) $state.go('login');
+	console.log($stateParams);
+	
+	$scope.saveTest = function () {
+		AjaxCallService.call('addTest',{uid: SessionUser.getId(), test: {name: $scope.tName}}, 
+				function onSuccess(data) {
+					$scope.tests.push(data.test);
+				},
+				function onError(data) {
+					$scope.$emit('alertMessage', {type: 'danger', message: data});
+				}
+		);
+	}
+	
+	$scope.deleteTest = function (test, index) {
+		AjaxCallService.call('deleteTest',{uid: SessionUser.getId(), test: test}, 
+				function onSuccess(data) {
+					$scope.tests.splice(index,1);
+				},
+				function onError(data) {
+					$scope.$emit('alertMessage', {type: 'danger', message: data});
+				}
+		);
+	}
+}]);
+
