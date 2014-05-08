@@ -37,6 +37,8 @@ import application.util.TimeEncrpyt;
 
 
 
+
+
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
@@ -131,7 +133,13 @@ public class LoginServlet extends HttpServlet{
 						resp.setError(JSONRPC2Error.INTERNAL_ERROR);
 					}
 				}
-				else if(method.equals("addQuestion"))
+				else if (method.equals("loadQuestion"))
+				{
+					jsonResult = loadQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult);
+				}
+				else if (method.equals("addQuestion"))
 				{
 					//add question
 					jsonResult = addQuestion(req, request);
@@ -149,6 +157,13 @@ public class LoginServlet extends HttpServlet{
 				{
 					//update question
 					jsonResult = updateQuestion(req, request);
+					System.out.println("json result: " + jsonResult.toString());
+					resp.setResult(jsonResult);
+				}
+				else if (method.equals("loadTestAndAllQuestions"))
+				{
+					//return the test and all questions from the database
+					jsonResult = loadTestAndAllQuestions(req, request);
 					System.out.println("json result: " + jsonResult.toString());
 					resp.setResult(jsonResult);
 				}
@@ -237,7 +252,57 @@ public class LoginServlet extends HttpServlet{
 		}
 	}
 
-	private JSONObject checkTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
+	public JSONObject loadQuestion(JSONRPC2Request req,
+			HttpServletRequest request) throws Exception {
+		JSONObject jsonResult = new JSONObject();
+		JSONObject jsonQuestion = new JSONObject();
+		
+		//set retrievers
+		Map<String, Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		Map<String, Object> qParams = np.getMap("question");
+		NamedParamsRetriever questNp = new NamedParamsRetriever(qParams);
+		int qid = questNp.getInt("id");
+		
+		//load question
+		MySQLDAO dao = new MySQLDAO();
+		Question q = dao.loadQuestion(qid);
+		
+		//set result
+		jsonQuestion = q.toJSONObject();
+		jsonResult.put("question", jsonQuestion);
+		
+		return jsonResult;
+	}
+
+	public JSONObject loadTestAndAllQuestions(JSONRPC2Request req,
+			HttpServletRequest request) throws Exception {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jsonAllQuestions = new JSONArray();
+		JSONObject jsonTest = new JSONObject();
+		
+		//retrievers
+		Map<String, Object> params = req.getNamedParams();
+		NamedParamsRetriever np = new NamedParamsRetriever(params);
+		Map<String, Object> tParams = np.getMap("test");
+		NamedParamsRetriever testNp = new NamedParamsRetriever(tParams);
+		int tid = testNp.getInt("id");
+		
+		//get data from DB
+		MySQLDAO dao = new MySQLDAO();
+		Test t = dao.loadTest(tid);
+		QuestionsList allQuestions = QuestionController.loadAllQuestions();
+		
+		//set result
+		jsonTest = t.toJSONObject();
+		jsonAllQuestions = allQuestions.toJSONArray();
+		jsonResult.put("test", jsonTest);
+		jsonResult.put("questions", jsonAllQuestions);
+		
+		return jsonResult;
+	}
+
+	public JSONObject checkTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray jsonWrongQuestions = new JSONArray();
 		QuestionsList wrongQuestions = new QuestionsList();
@@ -287,7 +352,7 @@ public class LoginServlet extends HttpServlet{
 		return jsonResult;
 	}
 
-	private JSONObject removeTestQuestion(JSONRPC2Request req,
+	public JSONObject removeTestQuestion(JSONRPC2Request req,
 			HttpServletRequest request) throws Exception, SQLException {
 		JSONObject jsonResult = new JSONObject();
 		
@@ -314,7 +379,7 @@ public class LoginServlet extends HttpServlet{
 		return jsonResult;
 	}
 
-	private JSONObject addTestQuestion(JSONRPC2Request req,
+	public JSONObject addTestQuestion(JSONRPC2Request req,
 			HttpServletRequest request) throws Exception, SQLException {
 		JSONObject jsonResult = new JSONObject();
 		
@@ -357,7 +422,7 @@ public class LoginServlet extends HttpServlet{
 		return jsonResult;
 	}
 
-	private JSONArray loadQuestionsByTest(JSONRPC2Request req,
+	public JSONArray loadQuestionsByTest(JSONRPC2Request req,
 			HttpServletRequest request) throws Exception, JSONRPC2Error {
 		JSONArray jsonTestQuestions = new JSONArray();
 		
@@ -378,7 +443,7 @@ public class LoginServlet extends HttpServlet{
 		return jsonTestQuestions;
 	}
 
-	private JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
+	public JSONObject updateTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
 		JSONObject jsonUpdateTest = new JSONObject();
 		
 		//get question
@@ -409,7 +474,7 @@ public class LoginServlet extends HttpServlet{
 		}
 	}
 
-	private JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
+	public JSONObject deleteTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error, Exception {
 		//create json object for the result
 		JSONObject jsonDeleteTest = new JSONObject();
 		
@@ -439,7 +504,7 @@ public class LoginServlet extends HttpServlet{
 		}
 	}
 
-	private JSONObject addTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
+	public JSONObject addTest(JSONRPC2Request req, HttpServletRequest request) throws JSONRPC2Error {
 				//json object for the result
 				JSONObject jsonAddTest = new JSONObject();
 				
