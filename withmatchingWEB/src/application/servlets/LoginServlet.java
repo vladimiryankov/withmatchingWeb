@@ -366,8 +366,9 @@ public class LoginServlet extends HttpServlet{
 		
 		MySQLDAO dao = new MySQLDAO();
 		Test t = dao.loadTest(testNp.getInt(("id")));
+		dao = new MySQLDAO();
 		Question q = dao.loadQuestion(questNp.getInt("id"));
-		
+		dao = new MySQLDAO();
 		t = dao.deleteTestQuestion(t, q);
 		
 		JSONObject jsonTest = t.toJSONObject();
@@ -396,6 +397,7 @@ public class LoginServlet extends HttpServlet{
 		//load test and question
 		MySQLDAO dao = new MySQLDAO();
 		Test t = dao.loadTest(tid);
+		dao = new MySQLDAO();
 		Question q = dao.loadQuestion(qid);
 		
 		//check for duplicates
@@ -409,6 +411,7 @@ public class LoginServlet extends HttpServlet{
 		}
 		if (!duplicate)
 		{
+			dao = new MySQLDAO();
 			t = dao.saveTestQuestion(t, q);
 		}
 		

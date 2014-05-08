@@ -50,7 +50,7 @@ public class MySQLDAO{
   protected static final String insertSQLTestQuestion = "INSERT INTO test_questions (Hash, QID, TID) VALUES(?, ?, ?)";
   protected static final String deleteSQLAllTestQuestions = "DELETE FROM test_questions WHERE TID = ?";
   protected static final String deleteSQLQuestionFromAllTests = "DELETE FROM test_questions WHERE QID = ?";
-  protected static final String deleteSQLTestQuestion = "DELETE FROM test_question WHERE Hash = ? AND QID = ? AND TID = ?";
+  protected static final String deleteSQLTestQuestion = "DELETE FROM test_questions WHERE Hash = ? AND QID = ? AND TID = ?";
   
   
   public MySQLDAO() throws Exception {

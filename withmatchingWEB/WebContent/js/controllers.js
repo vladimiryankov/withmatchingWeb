@@ -151,12 +151,22 @@ withmatchingControllers.controller('TestCtrl', ['$scope', '$state', 'SessionUser
 
 withmatchingControllers.controller('TestQuestionCtrl', ['$scope', '$state', 'SessionUser', 'AjaxCallService', '$stateParams',  function ($scope, $state, SessionUser, AjaxCallService, $stateParams) {
 	if (!SessionUser.isLoggedIn()) $state.go('login');
-	console.log($stateParams);
 	
-	$scope.saveTest = function () {
-		AjaxCallService.call('addTest',{uid: SessionUser.getId(), test: {name: $scope.tName}}, 
+	AjaxCallService.call('loadTestAndAllQuestions',{uid: SessionUser.getId(), test: {id: parseInt($stateParams.testId)}}, 
+			function onSuccess(data) {
+				$scope.test = data.test;
+				$scope.questions = data.questions;
+			},
+			function onError(data) {
+				$scope.$emit('alertMessage', {type: 'danger', message: data});
+			}
+	);
+	
+	$scope.addTestQuestion = function (question) {
+		AjaxCallService.call('addTestQuestion',{uid: SessionUser.getId(), test: {id: $scope.test.id}, question: question}, 
 				function onSuccess(data) {
-					$scope.tests.push(data.test);
+					$scope.test.questions.push(data.question);
+					$scope.$emit('alertMessage', {type: 'success', message: "Question '"+question.body+"' successfully added to '"+$scope.test.name+"'!"});
 				},
 				function onError(data) {
 					$scope.$emit('alertMessage', {type: 'danger', message: data});
@@ -164,10 +174,10 @@ withmatchingControllers.controller('TestQuestionCtrl', ['$scope', '$state', 'Ses
 		);
 	}
 	
-	$scope.deleteTest = function (test, index) {
-		AjaxCallService.call('deleteTest',{uid: SessionUser.getId(), test: test}, 
+	$scope.deleteTestQuestion = function (question, index) {
+		AjaxCallService.call('removeTestQuestion',{uid: SessionUser.getId(), test: {id: $scope.test.id}, question: question}, 
 				function onSuccess(data) {
-					$scope.tests.splice(index,1);
+					$scope.test.questions.splice(index,1);
 				},
 				function onError(data) {
 					$scope.$emit('alertMessage', {type: 'danger', message: data});
