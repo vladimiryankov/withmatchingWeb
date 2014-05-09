@@ -2,7 +2,7 @@
 	<div class="col-md-12">
 		<button type="button" title="Submit answers" data-ng-click="submitQuestions()" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-share-alt"></span> Submit answers</button>
 		<ul class="list-group">
-		  <li data-ng-repeat="tq in questions" class="list-group-item">
+		  <li data-ng-repeat="tq in questions" class="list-group-item{{ (typeof(tq.result) != 'undefined') ? ' '+tq.result : '' }}">
 		  
 		    <h4 class="list-group-item-heading">{{ tq.body }}</h4>
 		   <select data-ng-model="tq.answer" id="qAnswer" data-ng-options="answer for answer in tq.answers"></select>

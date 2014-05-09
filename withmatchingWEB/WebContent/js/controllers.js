@@ -80,7 +80,7 @@ withmatchingControllers.controller('HomeCtrl', ['$scope', '$state', 'SessionUser
 withmatchingControllers.controller('QuestionCtrl', ['$scope', '$state', 'SessionUser', 'AjaxCallService', function ($scope, $state, SessionUser, AjaxCallService) {
 	if (!SessionUser.isLoggedIn()) $state.go('login');
 	
-
+	$scope.uid = SessionUser.getId();
 	AjaxCallService.call('loadAllQuestions',{uid: SessionUser.getId()}, 
 			function onSuccess(data) {
 				$scope.questions = data.allQuestions;
@@ -116,7 +116,8 @@ withmatchingControllers.controller('QuestionCtrl', ['$scope', '$state', 'Session
 withmatchingControllers.controller('TestCtrl', ['$scope', '$state', 'SessionUser', 'AjaxCallService', function ($scope, $state, SessionUser, AjaxCallService) {
 	if (!SessionUser.isLoggedIn()) $state.go('login');
 	
-
+	$scope.uid = SessionUser.getId();
+	
 	AjaxCallService.call('loadAllTests',{uid: SessionUser.getId()}, 
 			function onSuccess(data) {
 				$scope.tests = data.allTests;
@@ -215,9 +216,25 @@ withmatchingControllers.controller('TestPlayCtrl', ['$scope', '$state', 'Session
 		$scope.test.questions = $scope.questions;
 		AjaxCallService.call('checkTest',{uid: SessionUser.getId(), test: $scope.test}, 
 				function onSuccess(data) {
-					console.log(data);
-					//$scope.test.questions.push(data.question);
-					//$scope.$emit('alertMessage', {type: 'success', message: "Question '"+question.body+"' successfully added to '"+$scope.test.name+"'!"});
+					//console.log(data);
+					
+					if (data.wrongQuestions.length == 0) $scope.$emit('alertMessage', {type: 'success', message: "Well done!"});
+					else $scope.$emit('alertMessage', {type: 'warning', message: ($scope.questions.length-data.wrongQuestions.length)+" out of "+$scope.questions.length+" right answers!"});
+					
+					for (var i = 0; i < $scope.questions.length; i++) {
+						var q = $scope.questions[i];
+						q.result = "list-group-item-success";
+						
+						for(var j = 0; j < data.wrongQuestions.length; j++) {
+							var wq = data.wrongQuestions[j];
+							if (wq.id == q.id) {
+								q.result = "list-group-item-danger";
+								break;
+							}
+						}
+						
+					}
+					
 				},
 				function onError(data) {
 					$scope.$emit('alertMessage', {type: 'danger', message: data});

@@ -15,7 +15,7 @@
 	<div class="col-md-8">
 		<ul class="list-group">
 		  <li data-ng-repeat="question in questions" class="list-group-item">
-		  <button type="button" data-ng-click="deleteQuestion(question, $index)" class="btn btn-danger btn-xs pull-right"><span class="glyphicon glyphicon-trash"></span></button>
+		  <button type="button" data-ng-show="uid == question.ownerId" data-ng-click="deleteQuestion(question, $index)" class="btn btn-danger btn-xs pull-right"><span class="glyphicon glyphicon-trash"></span></button>
 		    <h4 class="list-group-item-heading">{{ question.body }}</h4>
 		    <p class="list-group-item-text">{{ question.answer }}</p>
 		  </li>

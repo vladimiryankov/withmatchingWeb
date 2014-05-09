@@ -61,7 +61,7 @@ withmatchingServices.factory('SessionUser', function () {
 		},
 		
 		getId: function () {
-			return this.id;
+			return user.id;
 		},
 		
 		setLoggedIn: function (li) {
