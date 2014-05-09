@@ -186,3 +186,44 @@ withmatchingControllers.controller('TestQuestionCtrl', ['$scope', '$state', 'Ses
 	}
 }]);
 
+withmatchingControllers.controller('TestPlayCtrl', ['$scope', '$state', 'SessionUser', 'AjaxCallService', '$stateParams',  function ($scope, $state, SessionUser, AjaxCallService, $stateParams) {
+	if (!SessionUser.isLoggedIn()) $state.go('login');
+	
+	AjaxCallService.call('loadTestAndAllQuestions',{uid: SessionUser.getId(), test: {id: parseInt($stateParams.testId)}}, 
+			function onSuccess(data) {
+				$scope.test = data.test;
+				
+				var answers = [];
+				var questions = [];
+				for (var i = 0; i < data.test.questions.length; i++) {
+					var q = data.test.questions[i];
+					questions.push({body: q.body, answer: "", id: q.id});
+					answers.push(q.answer);
+				}
+				
+				for (var i = 0; i < questions.length; i++) {
+					questions[i].answers = answers;
+				}
+				$scope.questions = questions;
+			},
+			function onError(data) {
+				$scope.$emit('alertMessage', {type: 'danger', message: data});
+			}
+	);
+	
+	$scope.submitQuestions = function () {
+		$scope.test.questions = $scope.questions;
+		AjaxCallService.call('checkTest',{uid: SessionUser.getId(), test: $scope.test}, 
+				function onSuccess(data) {
+					console.log(data);
+					//$scope.test.questions.push(data.question);
+					//$scope.$emit('alertMessage', {type: 'success', message: "Question '"+question.body+"' successfully added to '"+$scope.test.name+"'!"});
+				},
+				function onError(data) {
+					$scope.$emit('alertMessage', {type: 'danger', message: data});
+				}
+		);
+	}
+	
+}]);
+

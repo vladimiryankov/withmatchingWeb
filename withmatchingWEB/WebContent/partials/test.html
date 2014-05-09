@@ -13,7 +13,8 @@
 		  <li data-ng-repeat="test in tests" class="list-group-item">
 		  <button type="button" data-ng-click="deleteTest(test, $index)" class="btn btn-danger btn-xs pull-right"><span class="glyphicon glyphicon-trash"></span></button>
 		  <span class="badge">{{ test.questions.length }}</span>
-		    <h4 class="list-group-item-heading"><a ui-sref="test.questions({testId: test.id, test: test})">{{ test.name }}</a></h4>
+		 
+		    <h4 class="list-group-item-heading"> <a ui-sref="test.play({testId: test.id})" title="Play"><span class="glyphicon glyphicon-tower"></span></a> <a ui-sref="test.questions({testId: test.id, test: test})">{{ test.name }}</a></h4>
 		  </li>
 		</ul>
 	</div>

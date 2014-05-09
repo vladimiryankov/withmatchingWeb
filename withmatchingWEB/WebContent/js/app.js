@@ -43,5 +43,14 @@ withmatching.config(['$stateProvider','$urlRouterProvider',
 		        controller: 'TestQuestionCtrl'
       		}
       	}
-      });
+      }).
+      state('test.play', {
+        	url: '/{testId}/play',
+        	views: {
+        		"@": {
+  		        templateUrl: 'partials/test.play.html',
+  		        controller: 'TestPlayCtrl'
+        		}
+        	}
+        });
   }]);
