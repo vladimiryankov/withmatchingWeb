@@ -39,6 +39,9 @@ import application.util.TimeEncrpyt;
 
 
 
+
+
+
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
@@ -318,7 +321,18 @@ public class LoginServlet extends HttpServlet{
 		List<Object> questions = testNp.getList("questions");
 		for (Object q: questions)
 		{
-			guessQuestions.add((Question) q);
+			//set new retriever for each question
+			NamedParamsRetriever questNp = new NamedParamsRetriever((Map<String, Object>) q);
+			//retrieve values
+			String answer = questNp.getString("answer");
+			String body = questNp.getString("body");
+			int id = questNp.getInt("id");
+			//create question with the values and add it to the guessed questions
+			Question quest = new Question();
+			quest.setId(id);
+			quest.setBody(body);
+			quest.setAnswer(answer);
+			guessQuestions.add(quest);
 		}
 		
 		//get test
@@ -327,7 +341,8 @@ public class LoginServlet extends HttpServlet{
 		Test t = dao.loadTest(tid);
 		
 		//get true questions
-		QuestionsList trueQuestions = dao.loadQuestionsByTest(tid);
+		MySQLDAO questionsDao = new MySQLDAO();
+		QuestionsList trueQuestions = questionsDao.loadQuestionsByTest(tid);
 		
 		//cycle through questions and find these with same id
 		for (Question tq: trueQuestions)
@@ -337,8 +352,10 @@ public class LoginServlet extends HttpServlet{
 				if (tq.getId() == gq.getId())
 				{
 					//if answers are different, than there is mistake
+					System.out.println("id match!");
 					if (!tq.getAnswer().equals(gq.getAnswer()))
 					{
+						System.out.println("Wrong question!");
 						wrongQuestions.add(gq);
 					}
 				}
