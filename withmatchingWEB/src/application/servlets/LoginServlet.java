@@ -42,6 +42,8 @@ import application.util.TimeEncrpyt;
 
 
 
+
+
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
@@ -385,8 +387,18 @@ public class LoginServlet extends HttpServlet{
 		Test t = dao.loadTest(testNp.getInt(("id")));
 		dao = new MySQLDAO();
 		Question q = dao.loadQuestion(questNp.getInt("id"));
-		dao = new MySQLDAO();
-		t = dao.deleteTestQuestion(t, q);
+		
+		User u = getCurrentUser(request);
+		
+		if (u.getId() == t.getOwnerId())
+		{
+			dao = new MySQLDAO();
+			t = dao.deleteTestQuestion(t, q);
+		}
+		else
+		{
+			throw new Exception("no privileges : you do not own this test");
+		}
 		
 		JSONObject jsonTest = t.toJSONObject();
 		JSONObject jsonQuestion = q.toJSONObject();
@@ -417,19 +429,29 @@ public class LoginServlet extends HttpServlet{
 		dao = new MySQLDAO();
 		Question q = dao.loadQuestion(qid);
 		
-		//check for duplicates
-		boolean duplicate = false;
-		for (Question quest: t.getQuestions())
+		//load current user
+		User u = getCurrentUser(request);
+		
+		if (u.getId() == t.getOwnerId())
 		{
-			if (quest.getId() == qid)
+			//check for duplicates
+			boolean duplicate = false;
+			for (Question quest: t.getQuestions())
 			{
-				duplicate = true;
+				if (quest.getId() == qid)
+				{
+					duplicate = true;
+				}
+			}
+			if (!duplicate)
+			{
+				dao = new MySQLDAO();
+				t = dao.saveTestQuestion(t, q);
 			}
 		}
-		if (!duplicate)
+		else
 		{
-			dao = new MySQLDAO();
-			t = dao.saveTestQuestion(t, q);
+			throw new Exception("no privileges : you do not own this test!");
 		}
 		
 		//set result
